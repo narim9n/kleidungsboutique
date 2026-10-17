@@ -201,3 +201,15 @@ input,textarea,select{font-weight:400}
 @media(hover:hover){.t.sold:hover{transform:none}}
 .tag.soldout{background:var(--ink);color:#fff}
 .product .price.was{color:var(--muted);text-decoration:line-through}
+
+/* Hinzugefügt-Hinweis */
+.toast{position:fixed;left:50%;bottom:max(24px,calc(env(safe-area-inset-bottom) + 12px));z-index:40;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:999px;padding:12px 14px 12px 18px;font-weight:600;font-size:.95rem;box-shadow:0 10px 30px rgba(0,0,0,.22);transform:translate(-50%,24px);opacity:0;pointer-events:none;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s ease;white-space:nowrap}
+.toast.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.toast svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24}
+.toast.show svg{animation:tick .45s .15s ease forwards}
+@keyframes tick{to{stroke-dashoffset:0}}
+.toast button{background:rgba(255,255,255,.16);border:0;color:#fff;font:inherit;font-weight:600;font-size:.88rem;border-radius:999px;padding:6px 12px;cursor:pointer}
+.toast button:hover{background:rgba(255,255,255,.28)}
+.cartbtn b.pop{animation:pop .45s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.4)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.toast{transition:opacity .2s}.toast.show svg{animation:none;stroke-dashoffset:0}.cartbtn b.pop{animation:none}}

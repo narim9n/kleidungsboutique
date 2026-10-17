@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>narimanghanai – handmade clothing</title>
 <meta name="description" content="Handmade clothing. Every piece is one of a kind.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <header>
@@ -32,11 +35,17 @@
 
 <footer>
   <div class="wrap">
-    <a href="groessen.html">Size guide</a><a href="impressum.html">Legal notice</a><a href="datenschutz.html">Privacy</a>
+    <a href="groessen.html">Size guide</a><a href="impressum.html">Legal notice</a><a href="widerruf.html">Withdrawal</a><a href="datenschutz.html">Privacy</a>
     <a href="https://instagram.com/narimanghanai" target="_blank" rel="noopener">Instagram</a><a href="https://tiktok.com/@narimanghanai" target="_blank" rel="noopener">TikTok</a>
     <p style="margin-top:10px">© <span id="y"></span> narimanghanai</p>
   </div>
 </footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+  <span>Added to cart</span>
+  <button type="button" id="toastView">View cart</button>
+</div>
 
 <div class="overlay" id="overlay"></div>
 <aside class="drawer" aria-label="Cart and checkout">
@@ -97,6 +106,7 @@
         <textarea name="message" placeholder="Anything I should know?"></textarea>
       </fieldset>
       <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      <p class="hint tiny">By placing your order you accept the <a href="widerruf.html" target="_blank" rel="noopener">right of withdrawal terms</a> and confirm you have read the <a href="datenschutz.html" target="_blank" rel="noopener">privacy policy</a>.</p>
       <p id="err" class="hint" role="alert"></p>
     </form>
 
@@ -215,7 +225,13 @@ function productHTML(p){
   </article>`;
 }
 
-let step = "cart";
+let step = "cart", toastTimer;
+function toastShow(){
+  const t = $("toast"); t.classList.remove("show"); void t.offsetWidth; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"), 2800);
+}
+function popBadge(){ const b = $("count"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); }
+$("toastView").onclick = () => { $("toast").classList.remove("show"); open(); };
 const open = () => document.body.classList.add("open");
 const close = () => document.body.classList.remove("open");
 const form = $("order");
@@ -234,7 +250,7 @@ function setStep(n){
   $("done").classList.toggle("hidden", n!=="done");
   $("back").hidden = n!=="form";
   $("dtitle").textContent = n==="cart" ? "Cart" : n==="form" ? "Checkout" : "Order placed";
-  $("cta").textContent = n==="cart" ? "Checkout" : "Place order";
+  $("cta").textContent = n==="cart" ? "Checkout" : "Order with obligation to pay";
   $("rShip").classList.toggle("hidden", n==="cart");
   $("rTotal").classList.toggle("hidden", n==="cart");
   $("shipNote").classList.toggle("hidden", n!=="cart");
@@ -370,7 +386,7 @@ $("pm").addEventListener("click",e=>{
   const p = PRODUCTS.find(x=>x.id===b.dataset.add);
   if(p.sold || cart.some(l=>l.id===p.id)) return;
   cart.push({id:p.id,name:p.name,price:p.price});
-  save(); setStep("cart"); open();
+  save(); setStep("cart"); toastShow(); popBadge();
 });
 $("lines").addEventListener("click",e=>{
   const r = e.target.dataset.r; if(r===undefined) return;
