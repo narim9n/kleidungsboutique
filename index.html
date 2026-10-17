@@ -18,9 +18,8 @@
   </div>
 </header>
 
-<main class="wrap">
-  <h1>Current pieces</h1>
-  <div class="list" id="grid"></div>
+<main class="wrap shopwrap">
+  <div class="shop" id="grid"></div>
 </main>
 
 <footer>
@@ -110,6 +109,13 @@
   </div>
 </aside>
 
+<div class="pm" id="pm" hidden role="dialog" aria-modal="true" aria-label="Product">
+  <div class="pm-box">
+    <div class="pm-bar"><button class="iconbtn" id="pmX" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
+    <div id="pmBody"></div>
+  </div>
+</div>
+
 <div class="lb" id="lb" tabindex="-1" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
   <div class="lb-top">
     <button class="lbtn" id="lbF" aria-label="Toggle full screen" hidden><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
@@ -153,10 +159,16 @@ try{ cart = JSON.parse(localStorage.getItem("cart2")||"[]"); }catch(e){}
 const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }catch(e){} };
 
 $("grid").innerHTML = PRODUCTS.map(p=>`
+  <button class="t" data-open="${p.id}" aria-label="${p.name}, ${eur(p.price)}" title="${p.name}">
+    <img src="${p.images[0]}" alt="" loading="lazy">${p.sold?'<span class="soldtag">Sold</span>':''}
+  </button>`).join("");
+
+function productHTML(p){
+  return `
   <article class="product" data-pid="${p.id}">
     <div class="gallery"><button class="fs" aria-label="View full screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-      <img class="main" id="main-${p.id}" src="${p.images[0]}" alt="${p.name}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}">
-      <div class="thumbs">${p.images.map((u,i)=>`<button data-g="${p.id}" data-src="${u}" data-i="${i}" class="${i?"":"on"}" aria-label="Photo ${i+1}"><img src="${u}" alt="" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}"></button>`).join("")}</div>
+      <img class="main" id="main-${p.id}" src="${p.images[0]}" alt="${p.name}">
+      <div class="thumbs">${p.images.map((u,i)=>`<button data-g="${p.id}" data-src="${u}" data-i="${i}" class="${i?"":"on"}" aria-label="Photo ${i+1}"><img src="${u}" alt=""></button>`).join("")}</div>
     </div>
     <div class="info">
       <h2 style="margin:0">${p.name}</h2>
@@ -167,7 +179,8 @@ $("grid").innerHTML = PRODUCTS.map(p=>`
       <button class="btn" data-add="${p.id}"></button>
       <p class="hint" style="margin-top:10px">Plus shipping, calculated at checkout.</p>
     </div>
-  </article>`).join("");
+  </article>`;
+}
 
 let step = "cart";
 const open = () => document.body.classList.add("open");
@@ -210,6 +223,7 @@ function render(){
   $("cta").disabled = step==="form" && !sh.ok;
   PRODUCTS.forEach(p=>{
     const b = document.querySelector(`[data-add="${p.id}"]`), inCart = cart.some(l=>l.id===p.id);
+    if(!b) return;
     b.textContent = p.sold ? "Sold" : inCart ? "In your cart" : "Add to cart";
     b.disabled = p.sold || inCart;
   });
@@ -299,7 +313,21 @@ sug.addEventListener("mousedown",e=>{ const li = e.target.closest("li[data-i]");
 q.addEventListener("blur",()=>setTimeout(closeSug,120));
 
 /* Seite */
-$("grid").addEventListener("click",e=>{
+function openProduct(id){
+  const p = PRODUCTS.find(x=>x.id===id); if(!p) return;
+  $("pmBody").innerHTML = productHTML(p); cur[id] = 0;
+  $("pm").hidden = false; document.body.classList.add("noscroll"); $("pm").scrollTop = 0; $("pm").querySelector(".pm-box").scrollTop = 0;
+  try{ history.replaceState(null,"","#"+id); }catch(e){}
+  render();
+}
+function closeProduct(){
+  $("pm").hidden = true; document.body.classList.remove("noscroll");
+  try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+}
+$("grid").addEventListener("click",e=>{ const t = e.target.closest("[data-open]"); if(t) openProduct(t.dataset.open); });
+$("pmX").onclick = closeProduct;
+$("pm").addEventListener("click",e=>{
+  if(e.target===$("pm")){ closeProduct(); return; }
   const t = e.target.closest("[data-g]");
   if(t){ $("main-"+t.dataset.g).src = t.querySelector("img").src;
     t.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===t)); cur[t.dataset.g] = +t.dataset.i; return; }
@@ -319,7 +347,7 @@ $("openCart").onclick = () => { if(step==="done") setStep("cart"); open(); };
 $("closeCart").onclick = close; $("overlay").onclick = close;
 $("back").onclick = () => setStep("cart");
 $("closeDone").onclick = () => { setStep("cart"); close(); };
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && document.body.classList.contains("open")){ close(); e.preventDefault(); } });
 $("cta").onclick = () => { if(step==="cart"){ if(cart.length){ setStep("form"); syncDelivery(); } } else placeOrder(); };
 form.addEventListener("submit",e=>{ e.preventDefault(); placeOrder(); });
 
@@ -367,7 +395,7 @@ function lbOpen(list,i){
 }
 function lbClose(){
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-  lb.hidden = true; document.body.classList.remove("noscroll");
+  lb.hidden = true; if($("pm").hidden) document.body.classList.remove("noscroll");
 }
 function toggleFull(){
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
@@ -397,7 +425,7 @@ lbImg.addEventListener("pointerup",e=>{
 });
 document.addEventListener("keydown",e=>{
   if(lb.hidden) return;
-  if(e.key==="Escape" && !document.fullscreenElement) lbClose();
+  if(e.key==="Escape" && !document.fullscreenElement){ lbClose(); e.preventDefault(); }
   if(e.key==="ArrowLeft") lbShow(lbI-1);
   if(e.key==="ArrowRight") lbShow(lbI+1);
   if(e.key==="f" || e.key==="F") toggleFull();
@@ -421,6 +449,8 @@ document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==
 window.addEventListener("pagehide",notifyAbandoned);
 $("y").textContent = new Date().getFullYear();
 setStep("cart");
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !e.defaultPrevented && !$("pm").hidden) closeProduct(); });
+if(location.hash.length>1) openProduct(decodeURIComponent(location.hash.slice(1)));
 </script>
 </body>
 </html>
