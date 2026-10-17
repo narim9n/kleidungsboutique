@@ -141,7 +141,7 @@ legend{font-weight:800;font-size:1.05rem;padding:0;margin-bottom:12px}
 #sug[hidden]{display:none}
 #sug li{padding:10px 12px;border-radius:7px;cursor:pointer;font-size:.95rem;line-height:1.35}
 #sug li:hover,#sug li.on{background:#F0F2F5}
-input:invalid:not(:placeholder-shown):not(:focus){border-color:#B5533C}
+input:user-invalid,select:user-invalid{border-color:#B5533C}
 .dfoot{border-top:1px solid var(--line);padding:14px 20px max(16px,env(safe-area-inset-bottom));display:grid;gap:6px;background:#fff}
 .dfoot .total{margin-top:2px}
 .dfoot .tiny{margin:0}
@@ -152,3 +152,5 @@ input,textarea,select{font-weight:400}
 #sug li{font-weight:400}
 .opt{white-space:nowrap}
 .two{align-items:end}
+#sug li.none{color:var(--muted);cursor:default;font-size:.9rem}
+#sug li.none:hover{background:none}

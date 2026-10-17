@@ -62,8 +62,9 @@
           <label class="card"><input type="radio" name="delivery" value="pickup"><span><b>Pick up in Frankfurt</b><small>Free. We arrange a time by message.</small></span></label>
         </div>
         <div id="addr">
+          <label>Country<select name="country" id="country" required autocomplete="country"></select></label>
           <div class="ac">
-            <label><span>Search your address</span>
+            <label><span id="qLabel">Search your address</span>
               <div class="acw">
                 <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Start typing street and number" role="combobox" aria-expanded="false" aria-controls="sug" aria-autocomplete="list">
                 <ul id="sug" role="listbox" hidden></ul>
@@ -79,10 +80,7 @@
             <label>Postcode<input name="postcode" required autocomplete="postal-code"></label>
             <label>City<input name="city" required autocomplete="address-level2"></label>
           </div>
-          <div class="two">
-            <label><span>State <span class="opt">optional</span></span><input name="state" autocomplete="address-level1"></label>
-            <label>Country<select name="country" id="country" required autocomplete="country"></select></label>
-          </div>
+          <label><span>State <span class="opt">optional</span></span><input name="state" autocomplete="address-level1"></label>
         </div>
         <p id="shipMsg" class="hint" role="status"></p>
       </fieldset>
@@ -131,6 +129,8 @@ const PAYPAL_USER = "narimanGhanai";
 // Versandkosten in Euro
 const SHIPPING = {de:4.99, eu:9.99, pickup:0};
 const COUNTRIES = {DE:"Germany",AT:"Austria",BE:"Belgium",BG:"Bulgaria",HR:"Croatia",CY:"Cyprus",CZ:"Czechia",DK:"Denmark",EE:"Estonia",FI:"Finland",FR:"France",GR:"Greece",HU:"Hungary",IE:"Ireland",IT:"Italy",LV:"Latvia",LT:"Lithuania",LU:"Luxembourg",MT:"Malta",NL:"Netherlands",PL:"Poland",PT:"Portugal",RO:"Romania",SK:"Slovakia",SI:"Slovenia",ES:"Spain",SE:"Sweden"};
+// Grobe Grenzen je Land (Länge min, Breite min, Länge max, Breite max) für die Adresssuche
+const BBOX = {DE:[5.87,47.27,15.04,55.06],AT:[9.53,46.37,17.17,49.02],BE:[2.5,49.5,6.41,51.51],BG:[22.35,41.23,28.61,44.22],HR:[13.49,42.39,19.45,46.55],CY:[32.25,34.55,34.6,35.7],CZ:[12.09,48.55,18.86,51.06],DK:[8.0,54.5,15.2,57.8],EE:[21.7,57.5,28.2,59.7],FI:[20.5,59.8,31.6,70.1],FR:[-5.2,41.3,9.7,51.2],GR:[19.3,34.8,28.3,41.8],HU:[16.1,45.7,22.9,48.6],IE:[-10.7,51.4,-5.9,55.4],IT:[6.6,36.6,18.6,47.1],LV:[20.9,55.6,28.3,58.1],LT:[20.9,53.9,26.9,56.5],LU:[5.7,49.4,6.6,50.2],MT:[14.1,35.8,14.6,36.1],NL:[3.3,50.7,7.3,53.6],PL:[14.1,49.0,24.2,54.9],PT:[-9.6,36.9,-6.1,42.2],RO:[20.2,43.6,29.8,48.3],SK:[16.8,47.7,22.6,49.6],SI:[13.3,45.4,16.6,46.9],ES:[-9.4,35.9,4.4,43.9],SE:[10.9,55.3,24.2,69.1]};
 const PRODUCTS = [
   {id:"flared-jeans", name:"Flared jeans with double waist",
    meta:"Handmade, one of a kind",
@@ -226,11 +226,20 @@ function syncDelivery(){
   render();
 }
 form.querySelectorAll("[name=delivery]").forEach(r=>r.addEventListener("change",syncDelivery));
-$("country").addEventListener("change",()=>{ $("shipMsg").textContent = ""; render(); });
+function syncCountry(){
+  const c = $("country").value;
+  $("qLabel").textContent = c ? `Search your address in ${COUNTRIES[c]}` : "Search your address";
+  q.placeholder = c ? `Street and number in ${COUNTRIES[c]}` : "Select a country first";
+}
+$("country").addEventListener("change",()=>{
+  $("shipMsg").textContent = ""; syncCountry(); closeSug(); render();
+  if(q.value.trim().length>=4) search(q.value.trim());
+});
 
 /* Adresssuche (Photon / OpenStreetMap) */
 let acTimer, acCtl, acItems = [], acActive = -1;
 const sug = $("sug"), q = $("q");
+syncCountry();
 function toAddr(f){
   const p = f.properties || {};
   const street = p.street || (p.osm_key==="highway" ? p.name : "");
@@ -241,9 +250,9 @@ function toAddr(f){
   return a;
 }
 function closeSug(){ sug.hidden = true; q.setAttribute("aria-expanded","false"); acActive = -1; }
-function showSug(){
-  if(!acItems.length){ closeSug(); return; }
-  sug.innerHTML = acItems.map((a,i)=>`<li role="option" data-i="${i}">${a.label}</li>`).join("");
+function showSug(msg){
+  if(!acItems.length && !msg){ closeSug(); return; }
+  sug.innerHTML = acItems.length ? acItems.map((a,i)=>`<li role="option" data-i="${i}">${a.label}</li>`).join("") : `<li class="none">${msg}</li>`;
   sug.hidden = false; q.setAttribute("aria-expanded","true"); acActive = -1;
   sug.scrollIntoView({block:"nearest"});
 }
@@ -251,12 +260,14 @@ function markActive(){
   sug.querySelectorAll("li").forEach((li,i)=>li.classList.toggle("on",i===acActive));
 }
 async function search(text){
+  const cc = $("country").value;
+  if(!cc){ acItems = []; showSug("Select a country first."); return; }
   if(acCtl) acCtl.abort(); acCtl = new AbortController();
   try{
-    const r = await fetch("https://photon.komoot.io/api/?limit=8&q="+encodeURIComponent(text),{signal:acCtl.signal});
+    const r = await fetch("https://photon.komoot.io/api/?limit=10&bbox="+BBOX[cc].join(",")+"&q="+encodeURIComponent(text),{signal:acCtl.signal});
     const j = await r.json(); const seen = new Set();
-    acItems = (j.features||[]).map(toAddr).filter(a=>a && !seen.has(a.label) && seen.add(a.label)).slice(0,5);
-    showSug();
+    acItems = (j.features||[]).map(toAddr).filter(a=>a && a.cc===cc && !seen.has(a.label) && seen.add(a.label)).slice(0,5);
+    showSug(`No match in ${COUNTRIES[cc]}. You can enter your address by hand below.`);
   }catch(e){ if(e.name!=="AbortError") closeSug(); }
 }
 function pick(i){
@@ -284,7 +295,7 @@ q.addEventListener("keydown",e=>{
   else if(e.key==="Enter" && acActive>=0){ e.preventDefault(); pick(acActive); }
   else if(e.key==="Escape"){ e.stopPropagation(); closeSug(); }
 });
-sug.addEventListener("mousedown",e=>{ const li = e.target.closest("li"); if(li){ e.preventDefault(); pick(+li.dataset.i); } });
+sug.addEventListener("mousedown",e=>{ const li = e.target.closest("li[data-i]"); if(li){ e.preventDefault(); pick(+li.dataset.i); } });
 q.addEventListener("blur",()=>setTimeout(closeSug,120));
 
 /* Seite */
@@ -332,7 +343,7 @@ async function placeOrder(){
     });
     if(!res.ok) throw new Error();
     $("paypal").href = `https://paypal.me/${PAYPAL_USER}/${total.toFixed(2)}EUR`;
-    cart = []; save(); form.reset(); $("country").value = "DE"; $("err").textContent = ""; q.value = "";
+    cart = []; save(); form.reset(); $("country").value = "DE"; syncCountry(); $("err").textContent = ""; q.value = "";
     setStep("done");
   }catch(err){
     $("err").textContent = "Something went wrong. Please try again or message me on Instagram.";
