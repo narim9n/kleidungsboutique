@@ -160,7 +160,6 @@ input,textarea,select{font-weight:400}
 .shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}
 .t{display:block;position:relative;padding:0;margin:0;background:#fff;border:1px solid transparent;cursor:pointer;aspect-ratio:3/4;overflow:hidden}
 .t:hover{border-color:#cfd3d9}
-.soldtag{position:absolute;left:6px;top:6px;background:#fff;border:1px solid var(--ink);border-radius:999px;font-size:.7rem;font-weight:600;padding:1px 8px}
 .pm{position:fixed;inset:0;z-index:15;background:rgba(20,24,31,.45);display:flex;align-items:center;justify-content:center;padding:20px;animation:lbin .18s ease}
 .pm[hidden]{display:none}
 .pm-box{background:#fff;width:100%;max-width:1000px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow:auto;border-radius:12px;padding:0 28px 28px}
@@ -195,3 +194,10 @@ input,textarea,select{font-weight:400}
   .t:hover img.h,.t:focus-visible img.h{opacity:1}
 }
 @media(prefers-reduced-motion:reduce){.t,.t img.h,.cbtn svg{transition:none}.t:hover{transform:none}}
+/* Sold-Look */
+.soldtag{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);z-index:3;text-align:center;background:rgba(255,255,255,.88);color:var(--ink);font-weight:800;font-size:.78rem;letter-spacing:.28em;padding:7px 0 7px .28em;text-transform:uppercase}
+.t.sold img{filter:grayscale(1);opacity:.5}
+.t.sold img.h{display:none}
+@media(hover:hover){.t.sold:hover{transform:none}}
+.tag.soldout{background:var(--ink);color:#fff}
+.product .price.was{color:var(--muted);text-decoration:line-through}

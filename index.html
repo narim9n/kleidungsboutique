@@ -168,15 +168,17 @@ const $ = id => document.getElementById(id);
 const eur = n => new Intl.NumberFormat("en-IE",{style:"currency",currency:"EUR"}).format(n);
 let cart = [];
 try{ cart = JSON.parse(localStorage.getItem("cart2")||"[]"); }catch(e){}
+cart = cart.filter(l=>{ const p = PRODUCTS.find(x=>x.id===l.id); return p && !p.sold; });
 const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }catch(e){} };
 
 let activeCol = COLLECTIONS[0].id;
 function renderGrid(){
-  const list = activeCol==="all" ? PRODUCTS : PRODUCTS.filter(p=>p.collection===activeCol);
+  const base = activeCol==="all" ? PRODUCTS : PRODUCTS.filter(p=>p.collection===activeCol);
+  const list = [...base].sort((a,b)=>(a.sold?1:0)-(b.sold?1:0));   // verkaufte Teile ans Ende
   $("colTitle").textContent = activeCol==="all" ? "All pieces" : COLLECTIONS.find(c=>c.id===activeCol).name;
   $("grid").innerHTML = list.length ? list.map(p=>{
     const h = p.images[p.hoverImg!==undefined ? p.hoverImg : 1];
-    return `<button class="t" data-open="${p.id}" aria-label="${p.name}, ${eur(p.price)}" title="${p.name}">
+    return `<button class="t${p.sold?" sold":""}" data-open="${p.id}" aria-label="${p.name}, ${p.sold?"sold":eur(p.price)}" title="${p.name}">
       <img class="m" src="${p.images[0]}" alt="">${p.images.length>1?`<img class="h" src="${h}" alt="">`:""}${p.sold?'<span class="soldtag">Sold</span>':''}
     </button>`;}).join("") : '<p class="hint">Nothing here yet.</p>';
 }
@@ -204,11 +206,11 @@ function productHTML(p){
     <div class="info">
       <h2 style="margin:0">${p.name}</h2>
       <p class="hint" style="margin-top:4px">${p.meta}</p>
-      <span class="tag">Unique piece · only 1 available</span>
-      <div class="price">${eur(p.price)}</div>
+      <span class="tag${p.sold?" soldout":""}">${p.sold?"Sold · one of a kind":"Unique piece · only 1 available"}</span>
+      <div class="price${p.sold?" was":""}">${eur(p.price)}</div>
       <ul class="details">${p.details.map(d=>`<li>${d}</li>`).join("")}</ul>
       <button class="btn" data-add="${p.id}"></button>
-      <p class="hint" style="margin-top:10px">Plus shipping, calculated at checkout.</p>
+      <p class="hint" style="margin-top:10px">${p.sold?"This piece has found its home.":"Plus shipping, calculated at checkout."}</p>
     </div>
   </article>`;
 }
