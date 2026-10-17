@@ -73,3 +73,30 @@ footer a{margin-right:14px}
 .details{padding-left:18px;margin:14px 0 20px}
 .details li{color:#3a4150;margin-bottom:4px}
 .line2{display:flex;justify-content:space-between}
+
+/* Lightbox */
+.gallery{position:relative}
+.gallery .main{cursor:zoom-in}
+.fs{position:absolute;top:10px;right:10px;z-index:2;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--ink);font-size:1.3rem;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.25)}
+.lb{position:fixed;inset:0;background:#000;z-index:50;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.lb[hidden]{display:none}
+.lb img{max-width:100vw;max-height:100vh;max-height:100dvh;object-fit:contain;touch-action:none;user-select:none;-webkit-user-drag:none;cursor:zoom-in}
+.lb button{position:absolute;z-index:2;width:48px;height:48px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:1.8rem;line-height:1;cursor:pointer}
+.lb button:hover{background:rgba(255,255,255,.3)}
+.lb-x{top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}
+.lb-p{left:max(14px,env(safe-area-inset-left));top:50%;margin-top:-24px}
+.lb-n{right:max(14px,env(safe-area-inset-right));top:50%;margin-top:-24px}
+.lb-c{position:absolute;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);color:#fff;font-size:.95rem;opacity:.85}
+body.noscroll{overflow:hidden}
+/* Alle Geräte */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+img{max-width:100%}
+button,.btn,select{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.wrap{padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
+.cartbtn{min-height:44px;padding:0}
+.drawer{height:100vh;height:100dvh}
+.dbody{padding-bottom:max(18px,env(safe-area-inset-bottom))}
+footer .wrap{display:flex;flex-wrap:wrap;gap:6px 0}
+footer .wrap p{flex-basis:100%}
+@media(min-width:600px) and (max-width:799px){.gallery{max-width:540px;margin:0 auto}.info{max-width:540px;margin:0 auto}}
+@media(max-width:420px){body{font-size:16px}.wrap{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}.lb-p,.lb-n{width:42px;height:42px}}

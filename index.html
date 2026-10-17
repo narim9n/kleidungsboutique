@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>narimanghanai – handmade clothing</title>
 <meta name="description" content="Handmade clothing. Every piece is one of a kind.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,6 +62,14 @@
   </div>
 </aside>
 
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button class="lb-x" id="lbX" aria-label="Close">×</button>
+  <button class="lb-p" id="lbP" aria-label="Previous photo">‹</button>
+  <img id="lbImg" alt="" draggable="false">
+  <button class="lb-n" id="lbN" aria-label="Next photo">›</button>
+  <div class="lb-c" id="lbC"></div>
+</div>
+
 <script>
 // ==== HIER ANPASSEN ====
 const FORM_TARGET = "nghanai@icloud.com";   // später durch den Formsubmit-Alias ersetzen
@@ -94,10 +102,10 @@ try{ cart = JSON.parse(localStorage.getItem("cart2")||"[]"); }catch(e){}
 const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }catch(e){} };
 
 $("grid").innerHTML = PRODUCTS.map(p=>`
-  <article class="product">
-    <div class="gallery">
+  <article class="product" data-pid="${p.id}">
+    <div class="gallery"><button class="fs" aria-label="View fullscreen">⤢</button>
       <img class="main" id="main-${p.id}" src="${p.images[0]}" alt="${p.name}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}">
-      <div class="thumbs">${p.images.map((u,i)=>`<button data-g="${p.id}" data-src="${u}" class="${i?"":"on"}" aria-label="Photo ${i+1}"><img src="${u}" alt="" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}"></button>`).join("")}</div>
+      <div class="thumbs">${p.images.map((u,i)=>`<button data-g="${p.id}" data-src="${u}" data-i="${i}" class="${i?"":"on"}" aria-label="Photo ${i+1}"><img src="${u}" alt="" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}"></button>`).join("")}</div>
     </div>
     <div class="info">
       <h2 style="margin:0">${p.name}</h2>
@@ -136,7 +144,9 @@ const close = () => document.body.classList.remove("open");
 $("grid").addEventListener("click",e=>{
   const t = e.target.closest("[data-g]");
   if(t){ $("main-"+t.dataset.g).src = t.querySelector("img").src;
-    t.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===t)); return; }
+    t.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===t)); cur[t.dataset.g] = +t.dataset.i; return; }
+  const mm = e.target.closest(".main,.fs");
+  if(mm){ const pid = mm.closest(".product").dataset.pid; lbOpen(PRODUCTS.find(x=>x.id===pid).images, cur[pid]||0); return; }
   const b = e.target.closest("[data-add]"); if(!b) return;
   const p = PRODUCTS.find(x=>x.id===b.dataset.add);
   if(p.sold || cart.some(l=>l.id===p.id)) return;
@@ -173,6 +183,39 @@ $("order").addEventListener("submit",async e=>{
   }
   $("send").disabled = false;
 });
+const cur = {};
+const lb = $("lb"), lbImg = $("lbImg");
+let lbList = [], lbI = 0, z = 1, tx = 0, ty = 0, down = false, moved = false, sx = 0, sy = 0, stx = 0, sty = 0;
+function apply(){ lbImg.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; lbImg.style.cursor = z>1 ? "grab" : "zoom-in"; }
+function resetZoom(){ z = 1; tx = ty = 0; apply(); }
+function lbShow(i){ lbI = (i + lbList.length) % lbList.length; lbImg.src = lbList[lbI]; $("lbC").textContent = (lbI+1)+" / "+lbList.length; resetZoom(); }
+function lbOpen(list,i){ lbList = list; lb.hidden = false; document.body.classList.add("noscroll"); lbShow(i); $("lbX").focus(); }
+function lbClose(){ lb.hidden = true; document.body.classList.remove("noscroll"); }
+$("lbX").onclick = lbClose; $("lbP").onclick = () => lbShow(lbI-1); $("lbN").onclick = () => lbShow(lbI+1);
+lb.addEventListener("click",e=>{ if(e.target===lb) lbClose(); });
+lbImg.addEventListener("pointerdown",e=>{ down = true; moved = false; sx = e.clientX; sy = e.clientY; stx = tx; sty = ty; lbImg.style.transition = "none"; lbImg.setPointerCapture(e.pointerId); });
+lbImg.addEventListener("pointermove",e=>{
+  if(!down) return;
+  const dx = e.clientX - sx, dy = e.clientY - sy;
+  if(Math.abs(dx)+Math.abs(dy) > 6) moved = true;
+  if(z>1){ tx = stx+dx; ty = sty+dy; apply(); }
+});
+lbImg.addEventListener("pointerup",e=>{
+  down = false; lbImg.style.transition = "transform .2s";
+  const dx = e.clientX - sx;
+  if(!moved){
+    if(z>1){ resetZoom(); }
+    else{ const r = lbImg.getBoundingClientRect(); z = 2.5;
+      tx = -(e.clientX-(r.left+r.width/2))*(z-1); ty = -(e.clientY-(r.top+r.height/2))*(z-1); apply(); }
+  }else if(z===1 && Math.abs(dx)>50){ lbShow(lbI + (dx<0 ? 1 : -1)); }
+});
+document.addEventListener("keydown",e=>{
+  if(lb.hidden) return;
+  if(e.key==="Escape") lbClose();
+  if(e.key==="ArrowLeft") lbShow(lbI-1);
+  if(e.key==="ArrowRight") lbShow(lbI+1);
+});
+
 let notified = "";
 function notifyAbandoned(){
   if(!cart.length) return;
