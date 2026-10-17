@@ -142,6 +142,22 @@ $("order").addEventListener("submit",async e=>{
   }
   $("send").disabled = false;
 });
+let notified = "";
+function notifyAbandoned(){
+  if(!cart.length) return;
+  const sig = cart.map(l=>l.id).sort().join(",");
+  if(notified===sig) return; notified = sig;
+  const total = cart.reduce((a,l)=>a+l.price,0);
+  const fd = new FormData();
+  fd.append("_subject","Order not completed: "+eur(total));
+  fd.append("_template","table"); fd.append("_captcha","false");
+  fd.append("Status","A visitor left without completing the order");
+  fd.append("Items",cart.map(l=>l.name+" – "+eur(l.price)).join("\n"));
+  fd.append("Total",eur(total));
+  try{ navigator.sendBeacon("https://formsubmit.co/"+FORM_TARGET, fd); }catch(e){}
+}
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") notifyAbandoned(); });
+window.addEventListener("pagehide",notifyAbandoned);
 $("y").textContent = new Date().getFullYear();
 render();
 </script>
