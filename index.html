@@ -90,8 +90,8 @@ const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }c
 $("grid").innerHTML = PRODUCTS.map(p=>`
   <article class="product">
     <div class="gallery">
-      <img class="main" id="main-${p.id}" src="${p.images[0]}" alt="${p.name}">
-      <div class="thumbs">${p.images.map((u,i)=>`<button data-g="${p.id}" data-src="${u}" class="${i?"":"on"}" aria-label="Photo ${i+1}"><img src="${u}" alt=""></button>`).join("")}</div>
+      <img class="main" id="main-${p.id}" src="${p.images[0]}" alt="${p.name}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}">
+      <div class="thumbs">${p.images.map((u,i)=>`<button data-g="${p.id}" data-src="${u}" class="${i?"":"on"}" aria-label="Photo ${i+1}"><img src="${u}" alt="" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}"></button>`).join("")}</div>
     </div>
     <div class="info">
       <h2 style="margin:0">${p.name}</h2>
@@ -129,7 +129,7 @@ const close = () => document.body.classList.remove("open");
 
 $("grid").addEventListener("click",e=>{
   const t = e.target.closest("[data-g]");
-  if(t){ $("main-"+t.dataset.g).src = t.dataset.src;
+  if(t){ $("main-"+t.dataset.g).src = t.querySelector("img").src;
     t.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===t)); return; }
   const b = e.target.closest("[data-add]"); if(!b) return;
   const p = PRODUCTS.find(x=>x.id===b.dataset.add);
