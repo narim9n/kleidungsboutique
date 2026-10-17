@@ -19,6 +19,7 @@
 </header>
 
 <main class="wrap shopwrap">
+  <h1 class="collection">Winter Collection 26</h1>
   <div class="shop" id="grid"></div>
 </main>
 
@@ -160,8 +161,21 @@ const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }c
 
 $("grid").innerHTML = PRODUCTS.map(p=>`
   <button class="t" data-open="${p.id}" aria-label="${p.name}, ${eur(p.price)}" title="${p.name}">
-    <img src="${p.images[0]}" alt="" loading="lazy">${p.sold?'<span class="soldtag">Sold</span>':''}
+    ${p.images.map((u,i)=>`<img src="${u}" alt="" class="${i?"":"on"}">`).join("")}${p.sold?'<span class="soldtag">Sold</span>':''}
   </button>`).join("");
+
+/* Hover-Slideshow auf den Kacheln */
+if(matchMedia("(hover:hover)").matches && !matchMedia("(prefers-reduced-motion:reduce)").matches){
+  document.querySelectorAll(".t").forEach(t=>{
+    const imgs = t.querySelectorAll("img"); let i = 0, timer = null;
+    if(imgs.length<2) return;
+    const go = n => { imgs[i].classList.remove("on"); i = n % imgs.length; imgs[i].classList.add("on"); };
+    const start = () => { if(timer) return; go(1); timer = setInterval(()=>go(i+1), 750); };
+    const stop = () => { clearInterval(timer); timer = null; go(0); };
+    t.addEventListener("mouseenter",start); t.addEventListener("mouseleave",stop);
+    t.addEventListener("focus",start); t.addEventListener("blur",stop); t.addEventListener("click",stop);
+  });
+}
 
 function productHTML(p){
   return `
