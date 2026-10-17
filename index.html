@@ -150,8 +150,8 @@
 const FORM_TARGET = "ordershere901@gmail.com";   // Bestellungen kommen hierhin. Nach der Aktivierung durch den Formsubmit-Alias ersetzen
 const PAYPAL_USER = "narimanGhanai";
 // Jedes Teil ist ein Unikat. sold:true markiert es als verkauft.
-// Versandkosten in Euro
-const SHIPPING = {de:4.99, eu:9.99, pickup:0};
+// Versandkosten in Euro (DHL Paket bis 2 kg, Online-Frankierung, Stand 2026): Deutschland 6,19 / EU 14,49
+const SHIPPING = {de:6.19, eu:14.49, pickup:0};
 const COUNTRIES = {DE:"Germany",AT:"Austria",BE:"Belgium",BG:"Bulgaria",HR:"Croatia",CY:"Cyprus",CZ:"Czechia",DK:"Denmark",EE:"Estonia",FI:"Finland",FR:"France",GR:"Greece",HU:"Hungary",IE:"Ireland",IT:"Italy",LV:"Latvia",LT:"Lithuania",LU:"Luxembourg",MT:"Malta",NL:"Netherlands",PL:"Poland",PT:"Portugal",RO:"Romania",SK:"Slovakia",SI:"Slovenia",ES:"Spain",SE:"Sweden"};
 // Grobe Grenzen je Land (Länge min, Breite min, Länge max, Breite max) für die Adresssuche
 const BBOX = {DE:[5.87,47.27,15.04,55.06],AT:[9.53,46.37,17.17,49.02],BE:[2.5,49.5,6.41,51.51],BG:[22.35,41.23,28.61,44.22],HR:[13.49,42.39,19.45,46.55],CY:[32.25,34.55,34.6,35.7],CZ:[12.09,48.55,18.86,51.06],DK:[8.0,54.5,15.2,57.8],EE:[21.7,57.5,28.2,59.7],FI:[20.5,59.8,31.6,70.1],FR:[-5.2,41.3,9.7,51.2],GR:[19.3,34.8,28.3,41.8],HU:[16.1,45.7,22.9,48.6],IE:[-10.7,51.4,-5.9,55.4],IT:[6.6,36.6,18.6,47.1],LV:[20.9,55.6,28.3,58.1],LT:[20.9,53.9,26.9,56.5],LU:[5.7,49.4,6.6,50.2],MT:[14.1,35.8,14.6,36.1],NL:[3.3,50.7,7.3,53.6],PL:[14.1,49.0,24.2,54.9],PT:[-9.6,36.9,-6.1,42.2],RO:[20.2,43.6,29.8,48.3],SK:[16.8,47.7,22.6,49.6],SI:[13.3,45.4,16.6,46.9],ES:[-9.4,35.9,4.4,43.9],SE:[10.9,55.3,24.2,69.1]};
@@ -277,7 +277,7 @@ function render(){
     b.disabled = p.sold || inCart;
   });
 }
-$("shipHint").textContent = `Germany ${eur(SHIPPING.de)} · rest of the EU ${eur(SHIPPING.eu)}`;
+$("shipHint").textContent = `DHL Paket with tracking · Germany ${eur(SHIPPING.de)} · rest of the EU ${eur(SHIPPING.eu)}`;
 $("country").innerHTML = '<option value="">Select country</option>' + Object.entries(COUNTRIES).map(([c,n])=>`<option value="${c}">${n}</option>`).join("");
 $("country").value = "DE";
 
