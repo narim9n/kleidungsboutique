@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>narimanghanai – handgenähte Kleidung</title>
+<meta name="description" content="Selbstgenähte Kleidung, in kleinen Stückzahlen. Jedes Teil ein Unikat.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FFFFFF; --ink:#1B2440; --muted:#5B6478; --thread:#E3B23C; --card:#FFFFFF;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:"Bricolage Grotesque",system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;font-size:17px}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--thread);outline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.stitch{border:0;border-top:3px dashed var(--ink);opacity:.9}
+.stitch.gold{border-color:var(--thread)}
+header .wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:22px;padding-bottom:18px}
+.logo{font-weight:800;font-size:1.7rem;text-decoration:none;letter-spacing:-.01em}
+nav a{margin:0 11px;text-decoration:none;font-weight:600}
+nav a:hover{text-decoration:underline;text-decoration-color:var(--thread);text-decoration-thickness:3px;text-underline-offset:5px}
+.hero{padding:70px 0 60px}
+.hero h1{font-size:clamp(2.6rem,9vw,6.4rem);line-height:.95;font-weight:800;letter-spacing:-.04em;max-width:11ch}
+.hero p{max-width:46ch;font-size:1.25rem;color:var(--muted)}
+.btn{display:inline-block;margin-top:28px;background:var(--ink);color:var(--paper);padding:14px 26px;border-radius:999px;text-decoration:none;font-weight:600;border:0;cursor:pointer;font:inherit;font-weight:600}
+.btn:hover{background:#2C3A66}
+section{padding:50px 0}
+h2{font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:-.03em;margin-bottom:28px;line-height:1.1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:24px}
+.item{background:var(--card);border:2px dashed var(--ink);border-radius:6px;padding:14px;display:flex;flex-direction:column}
+.swatch{aspect-ratio:4/5;border-radius:3px;display:grid;place-items:center;font-weight:800;font-size:2.4rem;letter-spacing:-.04em;color:rgba(255,255,255,.9)}
+.item h3{margin-top:14px;font-size:1.1rem}
+.item .meta{color:var(--muted);font-size:.92rem}
+.item .row{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:14px}
+.price{font-weight:800;font-size:1.15rem}
+.item .btn{margin:0;padding:9px 16px;font-size:.92rem}
+.about{display:grid;gap:30px;grid-template-columns:1fr}
+@media(min-width:760px){.about{grid-template-columns:1fr 1fr}}
+.about p{color:var(--muted);max-width:52ch}
+form{display:grid;gap:14px;max-width:520px}
+label{font-weight:600;display:grid;gap:6px}
+input,textarea,select{font:inherit;padding:12px;border:2px solid var(--ink);border-radius:6px;background:var(--card);color:var(--ink)}
+textarea{min-height:110px;resize:vertical}
+footer{padding:40px 0 50px;color:var(--muted);font-size:.92rem}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo" href="#">narimanghanai</a>
+    <nav><a href="#shop">Shop</a><a href="#kontakt">Bestellen</a><a href="https://instagram.com/narimanghanai" target="_blank" rel="noopener">Instagram</a><a href="https://tiktok.com/@narimanghanai" target="_blank" rel="noopener">TikTok</a></nav>
+  </div>
+</header>
+<hr class="stitch">
+
+<main>
+
+<section id="shop">
+  <div class="wrap">
+    <h2>Aktuelle Stücke</h2>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+<hr class="stitch gold">
+
+<section id="kontakt">
+  <div class="wrap">
+    <h2>Bestellen oder fragen</h2>
+    <form id="order">
+      <label>Dein Name <input name="Name" required autocomplete="name"></label>
+      <label>Teil <select name="Teil" id="itemSelect"></select></label>
+      <label>Größe <select name="Größe"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option></select></label>
+      <label>Nachricht <textarea name="Nachricht" placeholder="Lieferadresse, Wünsche, Fragen …"></textarea></label>
+      <input type="hidden" name="_subject" value="Neue Anfrage">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      <button class="btn" type="submit" id="send">Anfrage senden</button>
+      <p id="status" role="status"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<hr class="stitch">
+<footer>
+  <div class="wrap">© <span id="y"></span> narimanghanai · <a href="#" id="imp">Impressum</a> · <a href="https://instagram.com/narimanghanai" target="_blank" rel="noopener">Instagram</a> · <a href="https://tiktok.com/@narimanghanai" target="_blank" rel="noopener">TikTok</a></div>
+</footer>
+
+<script>
+// ==== HIER ANPASSEN ====
+// Später hier ersetzen (siehe Anleitung). Die Adresse wird nicht auf der Seite angezeigt.
+const FORM_TARGET = "nghanai@icloud.com";
+const PRODUCTS = [
+  {name:"Leinen-Overshirt", meta:"Leinen, Perlmuttknöpfe", price:68, color:"#5C7A6B"},
+  {name:"Weite Hose", meta:"Baumwolltwill, Gummizug", price:54, color:"#B5533C"},
+  {name:"Wickelrock", meta:"Viskose, mit Taschen", price:46, color:"#2C3A66"},
+  {name:"Patchwork-Jacke", meta:"Unikat aus Stoffresten", price:120, color:"#8A6F2A"}
+];
+// =======================
+
+const grid = document.getElementById("grid");
+const sel = document.getElementById("itemSelect");
+PRODUCTS.forEach((p,i)=>{
+  const d = document.createElement("article");
+  d.className = "item";
+  d.innerHTML = `<div class="swatch" style="background:${p.color}">${p.name[0]}</div>
+    <h3>${p.name}</h3><div class="meta">${p.meta}</div>
+    <div class="row"><span class="price">${p.price} €</span><button class="btn" data-i="${i}">Anfragen</button></div>`;
+  grid.appendChild(d);
+  sel.add(new Option(`${p.name} (${p.price} €)`, p.name));
+});
+grid.addEventListener("click",e=>{
+  const b = e.target.closest("button[data-i]"); if(!b) return;
+  sel.selectedIndex = +b.dataset.i;
+  document.getElementById("kontakt").scrollIntoView({behavior:"smooth"});
+});
+const form = document.getElementById("order"), st = document.getElementById("status");
+form.action = "https://formsubmit.co/" + FORM_TARGET;
+form.method = "POST";
+if(location.protocol.startsWith("http")){
+  form.insertAdjacentHTML("beforeend",`<input type="hidden" name="_next" value="${location.origin+location.pathname}?danke#kontakt">`);
+}
+form.addEventListener("submit",()=>{
+  form.querySelector("[name=_subject]").value = "Bestellung: " + form.elements["Teil"].value;
+});
+if(location.search.includes("danke")){
+  st.textContent = "Danke! Deine Anfrage ist angekommen, ich melde mich bei dir.";
+}
+document.getElementById("y").textContent = new Date().getFullYear();
+document.getElementById("imp").addEventListener("click",e=>{e.preventDefault();alert("Hier muss dein Impressum hin (Name, Anschrift, E-Mail).");});
+</script>
+</body>
+</html>
