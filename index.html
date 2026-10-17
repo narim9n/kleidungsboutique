@@ -20,7 +20,7 @@
 
 <main class="wrap">
   <h1>Current pieces</h1>
-  <div class="grid" id="grid"></div>
+  <div class="list" id="grid"></div>
 </main>
 
 <footer>
@@ -38,8 +38,11 @@
     <div id="empty" class="hint">Your cart is empty.</div>
     <div id="lines"></div>
     <div id="checkout" class="hidden" style="display:grid;gap:12px">
+      <label>Shipping <select id="ship"></select></label>
+      <div class="line2"><span>Items</span><span id="sub"></span></div>
+      <div class="line2"><span>Shipping</span><span id="shipcost"></span></div>
       <div class="total"><span>Total</span><span id="sum"></span></div>
-      <p class="hint">Every piece is unique. Shipping is arranged with you after you order. Payment is made via PayPal.</p>
+      <p class="hint">Every piece is unique. Payment is made via PayPal after you place your order. For shipping to other countries, message me on Instagram.</p>
       <form id="order" style="display:grid;gap:12px">
         <label>Name <input name="Name" required autocomplete="name"></label>
         <label>Email <input name="email" type="email" required autocomplete="email"></label>
@@ -64,11 +67,17 @@
 const FORM_TARGET = "nghanai@icloud.com";   // später durch den Formsubmit-Alias ersetzen
 const PAYPAL_USER = "narimanGhanai";
 // Jedes Teil ist ein Unikat. sold:true markiert es als verkauft.
+const SHIPPING = [
+  {id:"de", label:"Germany", price:4.99},
+  {id:"eu", label:"EU (outside Germany)", price:9.99},
+  {id:"pickup", label:"Local pickup in Frankfurt", price:0}
+];
 const PRODUCTS = [
-  {id:"overshirt", name:"Linen overshirt", meta:"Linen, mother-of-pearl buttons", size:"M", price:68, color:"#5C7A6B", img:"", sold:false},
-  {id:"hose", name:"Wide trousers", meta:"Cotton twill, elastic waist", size:"S", price:54, color:"#B5533C", img:"", sold:false},
-  {id:"rock", name:"Wrap skirt", meta:"Viscose, with pockets", size:"M", price:46, color:"#22305A", img:"", sold:false},
-  {id:"jacke", name:"Patchwork jacket", meta:"Made from fabric scraps", size:"L", price:120, color:"#8A6F2A", img:"", sold:false}
+  {id:"flared-jeans", name:"Flared jeans with double waist",
+   meta:"Handmade, one of a kind",
+   price:60, sold:false,
+   images:["images/jeans-1.webp","images/jeans-2.webp","images/jeans-3.webp","images/jeans-4.webp","images/jeans-5.webp"],
+   details:["Flared leg with a double waistband","Embroidered leopard on the back and on the leg","Cherry blossom embroidery on the pocket side","Only 1 piece, no restock"]}
 ];
 // =======================
 
@@ -79,16 +88,26 @@ try{ cart = JSON.parse(localStorage.getItem("cart2")||"[]"); }catch(e){}
 const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }catch(e){} };
 
 $("grid").innerHTML = PRODUCTS.map(p=>`
-  <article class="tile">
-    <div class="ph" style="background:${p.color}">${p.img?`<img src="${p.img}" alt="${p.name}">`:p.name[0]}</div>
-    <h3>${p.name}</h3><div class="meta">${p.meta}</div>
-    <span class="tag">Unique piece</span>
-    <div class="price">${eur(p.price)}</div>
-    <div class="row"><button class="btn" style="flex:1" data-add="${p.id}"></button></div>
+  <article class="product">
+    <div class="gallery">
+      <img class="main" id="main-${p.id}" src="${p.images[0]}" alt="${p.name}">
+      <div class="thumbs">${p.images.map((u,i)=>`<button data-g="${p.id}" data-src="${u}" class="${i?"":"on"}" aria-label="Photo ${i+1}"><img src="${u}" alt=""></button>`).join("")}</div>
+    </div>
+    <div class="info">
+      <h2 style="margin:0">${p.name}</h2>
+      <p class="hint" style="margin-top:4px">${p.meta}</p>
+      <span class="tag">Unique piece · only 1 available</span>
+      <div class="price">${eur(p.price)}</div>
+      <ul class="details">${p.details.map(d=>`<li>${d}</li>`).join("")}</ul>
+      <button class="btn" data-add="${p.id}"></button>
+      <p class="hint" style="margin-top:10px">Plus shipping, calculated in your cart.</p>
+    </div>
   </article>`).join("");
 
 function render(){
-  const total = cart.reduce((a,l)=>a+l.price,0);
+  const sub = cart.reduce((a,l)=>a+l.price,0), ship = currentShip(), total = sub + ship.price;
+  $("sub").textContent = eur(sub); $("shipcost").textContent = ship.price ? eur(ship.price) : "Free";
+  $("order").elements["Address"].required = ship.id !== "pickup";
   $("count").textContent = cart.length;
   $("empty").classList.toggle("hidden", cart.length>0);
   $("checkout").classList.toggle("hidden", cart.length===0);
@@ -102,10 +121,16 @@ function render(){
     b.disabled = p.sold || inCart;
   });
 }
+$("ship").innerHTML = SHIPPING.map(x=>`<option value="${x.id}">${x.label} (${x.price?eur(x.price):"free"})</option>`).join("");
+const currentShip = () => SHIPPING.find(x=>x.id===$("ship").value) || SHIPPING[0];
+$("ship").addEventListener("change",render);
 const open = () => document.body.classList.add("open");
 const close = () => document.body.classList.remove("open");
 
 $("grid").addEventListener("click",e=>{
+  const t = e.target.closest("[data-g]");
+  if(t){ $("main-"+t.dataset.g).src = t.dataset.src;
+    t.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===t)); return; }
   const b = e.target.closest("[data-add]"); if(!b) return;
   const p = PRODUCTS.find(x=>x.id===b.dataset.add);
   if(p.sold || cart.some(l=>l.id===p.id)) return;
@@ -123,7 +148,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
 $("order").addEventListener("submit",async e=>{
   e.preventDefault();
   const f = new FormData(e.target); if(f.get("_honey")) return;
-  const total = cart.reduce((a,l)=>a+l.price,0);
+  const ship = currentShip(), total = cart.reduce((a,l)=>a+l.price,0) + ship.price;
   const items = cart.map(l=>`${l.name} – ${eur(l.price)}`).join("\n");
   $("send").disabled = true; $("err").textContent = "Sending …";
   try{
@@ -131,7 +156,7 @@ $("order").addEventListener("submit",async e=>{
       method:"POST",
       headers:{"Content-Type":"application/json",Accept:"application/json"},
       body:JSON.stringify({_subject:"New order: "+eur(total),_template:"table",_captcha:"false",
-        Name:f.get("Name"),email:f.get("email"),Address:f.get("Address"),Order:items,Total:eur(total),Message:f.get("Message")})
+        Name:f.get("Name"),email:f.get("email"),Address:f.get("Address"),Order:items,Shipping:ship.label+" ("+(ship.price?eur(ship.price):"free")+")",Total:eur(total),Message:f.get("Message")})
     });
     if(!res.ok) throw new Error();
     $("paypal").href = `https://paypal.me/${PAYPAL_USER}/${total.toFixed(2)}EUR`;
