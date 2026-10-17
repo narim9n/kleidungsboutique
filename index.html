@@ -81,7 +81,7 @@ const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }c
 $("grid").innerHTML = PRODUCTS.map(p=>`
   <article class="tile">
     <div class="ph" style="background:${p.color}">${p.img?`<img src="${p.img}" alt="${p.name}">`:p.name[0]}</div>
-    <h3>${p.name}</h3><div class="meta">${p.meta} · Size ${p.size}</div>
+    <h3>${p.name}</h3><div class="meta">${p.meta}</div>
     <span class="tag">Unique piece</span>
     <div class="price">${eur(p.price)}</div>
     <div class="row"><button class="btn" style="flex:1" data-add="${p.id}"></button></div>
@@ -93,7 +93,7 @@ function render(){
   $("empty").classList.toggle("hidden", cart.length>0);
   $("checkout").classList.toggle("hidden", cart.length===0);
   $("lines").innerHTML = cart.map((l,i)=>`
-    <div class="line"><div><b>${l.name}</b><br><small>Size ${l.size}</small><br>
+    <div class="line"><div><b>${l.name}</b><br>
       <button class="rm" data-r="${i}">Remove</button></div><div>${eur(l.price)}</div></div>`).join("");
   $("sum").textContent = eur(total);
   PRODUCTS.forEach(p=>{
@@ -124,7 +124,7 @@ $("order").addEventListener("submit",async e=>{
   e.preventDefault();
   const f = new FormData(e.target); if(f.get("_honey")) return;
   const total = cart.reduce((a,l)=>a+l.price,0);
-  const items = cart.map(l=>`${l.name} (size ${l.size}) – ${eur(l.price)}`).join("\n");
+  const items = cart.map(l=>`${l.name} – ${eur(l.price)}`).join("\n");
   $("send").disabled = true; $("err").textContent = "Sending …";
   try{
     const res = await fetch("https://formsubmit.co/ajax/"+FORM_TARGET,{
