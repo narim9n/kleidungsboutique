@@ -37,11 +37,9 @@ label{display:grid;gap:5px;font-weight:600;font-size:.95rem}
 textarea{min-height:80px;resize:vertical}
 /* Warenkorb */
 .overlay{position:fixed;inset:0;background:rgba(20,24,31,.45);opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;transform:translateX(100%);transition:transform .3s;z-index:21;display:flex;flex-direction:column}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:#fff;transform:translateX(100%);transition:transform .3s;z-index:21;display:flex;flex-direction:column}
 body.open .overlay{opacity:1;pointer-events:auto}
 body.open .drawer{transform:none}
-.dhead{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line);font-weight:800;font-size:1.2rem}
-.dhead button{background:none;border:0;font-size:1.6rem;cursor:pointer;color:var(--ink)}
 .dbody{padding:18px 20px;overflow:auto;flex:1;display:grid;gap:16px;align-content:start}
 .line{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px}
 .line small{color:var(--muted)}
@@ -110,3 +108,47 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 0}
 footer .wrap p{flex-basis:100%}
 @media(min-width:600px) and (max-width:799px){.gallery{max-width:540px;margin:0 auto}.info{max-width:540px;margin:0 auto}}
 @media(max-width:420px){body{font-size:16px}.wrap{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}.lbtn{width:44px;height:44px}}
+
+/* Checkout */
+.dhead{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:800;font-size:1.15rem;text-align:center}
+.dhead>span{grid-column:2}
+.iconbtn{width:44px;height:44px;border:0;border-radius:50%;background:none;color:var(--ink);cursor:pointer;display:grid;place-items:center}
+.iconbtn:hover{background:#F0F2F5}
+.iconbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#back{grid-column:1}
+#closeCart{grid-column:3}
+#back[hidden]{display:block;visibility:hidden}
+.dbody{gap:0;display:block;padding:18px 20px}
+#order{display:grid;gap:22px}
+fieldset{border:0;padding:0;margin:0;display:grid;gap:12px;min-width:0}
+legend{font-weight:800;font-size:1.05rem;padding:0;margin-bottom:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two.street{grid-template-columns:1fr 92px}
+.two.zip{grid-template-columns:120px 1fr}
+.two>label,label{min-width:0}
+.opt{font-weight:400;color:var(--muted);font-size:.85rem;margin-left:4px}
+.tiny{font-size:.8rem;margin-top:6px}
+.choice{display:grid;gap:10px}
+.card{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;font-weight:400}
+.card:has(input:checked){border-color:var(--ink);background:#F7F8FA}
+.card input{width:18px;height:18px;margin-top:3px;accent-color:var(--ink);flex:none;padding:0}
+.card b{display:block;font-weight:600}
+.card small{color:var(--muted);font-size:.85rem}
+#addr{display:grid;gap:12px;margin-top:4px}
+.ac{position:relative}
+.acw{position:relative}
+#sug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;list-style:none;padding:4px;margin:0;background:#fff;border:1.5px solid var(--ink);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+#sug[hidden]{display:none}
+#sug li{padding:10px 12px;border-radius:7px;cursor:pointer;font-size:.95rem;line-height:1.35}
+#sug li:hover,#sug li.on{background:#F0F2F5}
+input:invalid:not(:placeholder-shown):not(:focus){border-color:#B5533C}
+.dfoot{border-top:1px solid var(--line);padding:14px 20px max(16px,env(safe-area-inset-bottom));display:grid;gap:6px;background:#fff}
+.dfoot .total{margin-top:2px}
+.dfoot .tiny{margin:0}
+.btn.block{display:block;width:100%;text-align:center;padding:14px 20px;margin-top:8px;font-size:1rem}
+.line{margin-bottom:14px}
+
+input,textarea,select{font-weight:400}
+#sug li{font-weight:400}
+.opt{white-space:nowrap}
+.two{align-items:end}

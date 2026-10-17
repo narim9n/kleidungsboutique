@@ -32,33 +32,83 @@
 </footer>
 
 <div class="overlay" id="overlay"></div>
-<aside class="drawer" aria-label="Cart">
-  <div class="dhead"><span>Cart</span><button id="closeCart" aria-label="Close">×</button></div>
+<aside class="drawer" aria-label="Cart and checkout">
+  <div class="dhead">
+    <button class="iconbtn" id="back" hidden aria-label="Back to cart"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button>
+    <span id="dtitle">Cart</span>
+    <button class="iconbtn" id="closeCart" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+  </div>
   <div class="dbody">
-    <div id="empty" class="hint">Your cart is empty.</div>
-    <div id="lines"></div>
-    <div id="checkout" class="hidden" style="display:grid;gap:12px">
-      <label>Shipping <select id="ship"></select></label>
-      <div class="line2"><span>Items</span><span id="sub"></span></div>
-      <div class="line2"><span>Shipping</span><span id="shipcost"></span></div>
-      <div class="total"><span>Total</span><span id="sum"></span></div>
-      <p class="hint">Every piece is unique. Payment is made via PayPal after you place your order. For shipping to other countries, message me on Instagram.</p>
-      <form id="order" style="display:grid;gap:12px">
-        <label>Name <input name="Name" required autocomplete="name"></label>
-        <label>Email <input name="email" type="email" required autocomplete="email"></label>
-        <label>Delivery address <textarea name="Address" required autocomplete="street-address"></textarea></label>
-        <label>Message (optional) <input name="Message"></label>
-        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-        <button class="btn" id="send" type="submit">Place order</button>
-        <p id="err" class="hint" role="alert"></p>
-      </form>
+    <div id="vCart">
+      <p id="empty" class="hint">Your cart is empty.</p>
+      <div id="lines"></div>
     </div>
-    <div id="done" class="hidden" style="display:grid;gap:12px">
-      <h2 style="margin:0">Thank you for your order!</h2>
+
+    <form id="order" class="hidden" novalidate>
+      <fieldset>
+        <legend>Contact</legend>
+        <div class="two">
+          <label>First name<input name="firstName" required autocomplete="given-name"></label>
+          <label>Last name<input name="lastName" required autocomplete="family-name"></label>
+        </div>
+        <label>Email<input type="email" name="email" required autocomplete="email" inputmode="email"></label>
+        <label><span>Phone <span class="opt">optional</span></span><input type="tel" name="phone" autocomplete="tel"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Delivery</legend>
+        <div class="choice">
+          <label class="card"><input type="radio" name="delivery" value="ship" checked><span><b>Ship to my address</b><small id="shipHint"></small></span></label>
+          <label class="card"><input type="radio" name="delivery" value="pickup"><span><b>Pick up in Frankfurt</b><small>Free. We arrange a time by message.</small></span></label>
+        </div>
+        <div id="addr">
+          <div class="ac">
+            <label><span>Search your address</span>
+              <div class="acw">
+                <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Start typing street and number" role="combobox" aria-expanded="false" aria-controls="sug" aria-autocomplete="list">
+                <ul id="sug" role="listbox" hidden></ul>
+              </div>
+            </label>
+            <p class="hint tiny">Suggestions fill in the fields below. Address data © OpenStreetMap contributors.</p>
+          </div>
+          <div class="two street">
+            <label>Street<input name="street" required autocomplete="address-line1"></label>
+            <label>No.<input name="houseNo" required autocomplete="off"></label>
+          </div>
+          <div class="two zip">
+            <label>Postcode<input name="postcode" required autocomplete="postal-code"></label>
+            <label>City<input name="city" required autocomplete="address-level2"></label>
+          </div>
+          <div class="two">
+            <label><span>State <span class="opt">optional</span></span><input name="state" autocomplete="address-level1"></label>
+            <label>Country<select name="country" id="country" required autocomplete="country"></select></label>
+          </div>
+        </div>
+        <p id="shipMsg" class="hint" role="status"></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Message <span class="opt">optional</span></legend>
+        <textarea name="message" placeholder="Anything I should know?"></textarea>
+      </fieldset>
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      <p id="err" class="hint" role="alert"></p>
+    </form>
+
+    <div id="done" class="hidden">
+      <h2 style="margin:0 0 8px">Thank you for your order!</h2>
       <p>I received it and will email you soon. You can already pay now:</p>
-      <a class="btn" id="paypal" href="#" target="_blank" rel="noopener">Pay with PayPal</a>
-      <button class="btn ghost" id="closeDone" type="button">Keep browsing</button>
+      <a class="btn block" id="paypal" href="#" target="_blank" rel="noopener" style="margin-top:14px;text-align:center">Pay with PayPal</a>
+      <button class="btn ghost block" id="closeDone" type="button" style="margin-top:10px">Keep browsing</button>
     </div>
+  </div>
+
+  <div class="dfoot" id="dfoot">
+    <div class="line2"><span>Items</span><span id="sub"></span></div>
+    <div class="line2" id="rShip"><span>Shipping</span><span id="shipcost"></span></div>
+    <div class="total" id="rTotal"><span>Total</span><span id="sum"></span></div>
+    <p class="hint tiny" id="shipNote">Shipping is added at checkout.</p>
+    <button class="btn block" id="cta" type="button">Checkout</button>
   </div>
 </aside>
 
@@ -78,11 +128,9 @@
 const FORM_TARGET = "nghanai@icloud.com";   // später durch den Formsubmit-Alias ersetzen
 const PAYPAL_USER = "narimanGhanai";
 // Jedes Teil ist ein Unikat. sold:true markiert es als verkauft.
-const SHIPPING = [
-  {id:"de", label:"Germany", price:4.99},
-  {id:"eu", label:"EU (outside Germany)", price:9.99},
-  {id:"pickup", label:"Local pickup in Frankfurt", price:0}
-];
+// Versandkosten in Euro
+const SHIPPING = {de:4.99, eu:9.99, pickup:0};
+const COUNTRIES = {DE:"Germany",AT:"Austria",BE:"Belgium",BG:"Bulgaria",HR:"Croatia",CY:"Cyprus",CZ:"Czechia",DK:"Denmark",EE:"Estonia",FI:"Finland",FR:"France",GR:"Greece",HU:"Hungary",IE:"Ireland",IT:"Italy",LV:"Latvia",LT:"Lithuania",LU:"Luxembourg",MT:"Malta",NL:"Netherlands",PL:"Poland",PT:"Portugal",RO:"Romania",SK:"Slovakia",SI:"Slovenia",ES:"Spain",SE:"Sweden"};
 const PRODUCTS = [
   {id:"flared-jeans", name:"Flared jeans with double waist",
    meta:"Handmade, one of a kind",
@@ -117,33 +165,129 @@ $("grid").innerHTML = PRODUCTS.map(p=>`
       <div class="price">${eur(p.price)}</div>
       <ul class="details">${p.details.map(d=>`<li>${d}</li>`).join("")}</ul>
       <button class="btn" data-add="${p.id}"></button>
-      <p class="hint" style="margin-top:10px">Plus shipping, calculated in your cart.</p>
+      <p class="hint" style="margin-top:10px">Plus shipping, calculated at checkout.</p>
     </div>
   </article>`).join("");
 
+let step = "cart";
+const open = () => document.body.classList.add("open");
+const close = () => document.body.classList.remove("open");
+const form = $("order");
+const delivery = () => form.querySelector("[name=delivery]:checked").value;
+
+function shipInfo(){
+  if(delivery()==="pickup") return {ok:true, cost:SHIPPING.pickup, label:"Pickup in Frankfurt"};
+  const c = $("country").value;
+  if(!c) return {ok:false, cost:0, label:"Shipping"};
+  return {ok:true, cost: c==="DE" ? SHIPPING.de : SHIPPING.eu, label: c==="DE" ? "Shipping within Germany" : "Shipping within the EU"};
+}
+function setStep(n){
+  step = n;
+  $("vCart").classList.toggle("hidden", n!=="cart");
+  form.classList.toggle("hidden", n!=="form");
+  $("done").classList.toggle("hidden", n!=="done");
+  $("back").hidden = n!=="form";
+  $("dtitle").textContent = n==="cart" ? "Cart" : n==="form" ? "Checkout" : "Order placed";
+  $("cta").textContent = n==="cart" ? "Checkout" : "Place order";
+  $("rShip").classList.toggle("hidden", n==="cart");
+  $("rTotal").classList.toggle("hidden", n==="cart");
+  $("shipNote").classList.toggle("hidden", n!=="cart");
+  render();
+  $("dfoot").parentElement.querySelector(".dbody").scrollTop = 0;
+}
 function render(){
-  const sub = cart.reduce((a,l)=>a+l.price,0), ship = currentShip(), total = sub + ship.price;
-  $("sub").textContent = eur(sub); $("shipcost").textContent = ship.price ? eur(ship.price) : "Free";
-  $("order").elements["Address"].required = ship.id !== "pickup";
+  const sub = cart.reduce((a,l)=>a+l.price,0), sh = shipInfo(), total = sub + sh.cost;
   $("count").textContent = cart.length;
   $("empty").classList.toggle("hidden", cart.length>0);
-  $("checkout").classList.toggle("hidden", cart.length===0);
+  $("dfoot").classList.toggle("hidden", cart.length===0 || step==="done");
+  if(cart.length===0 && step==="form"){ setStep("cart"); return; }
   $("lines").innerHTML = cart.map((l,i)=>`
     <div class="line"><div><b>${l.name}</b><br>
       <button class="rm" data-r="${i}">Remove</button></div><div>${eur(l.price)}</div></div>`).join("");
+  $("sub").textContent = eur(sub);
+  $("shipcost").textContent = sh.ok ? (sh.cost ? eur(sh.cost) : "Free") : "–";
   $("sum").textContent = eur(total);
+  $("cta").disabled = step==="form" && !sh.ok;
   PRODUCTS.forEach(p=>{
     const b = document.querySelector(`[data-add="${p.id}"]`), inCart = cart.some(l=>l.id===p.id);
     b.textContent = p.sold ? "Sold" : inCart ? "In your cart" : "Add to cart";
     b.disabled = p.sold || inCart;
   });
 }
-$("ship").innerHTML = SHIPPING.map(x=>`<option value="${x.id}">${x.label} (${x.price?eur(x.price):"free"})</option>`).join("");
-const currentShip = () => SHIPPING.find(x=>x.id===$("ship").value) || SHIPPING[0];
-$("ship").addEventListener("change",render);
-const open = () => document.body.classList.add("open");
-const close = () => document.body.classList.remove("open");
+$("shipHint").textContent = `Germany ${eur(SHIPPING.de)} · rest of the EU ${eur(SHIPPING.eu)}`;
+$("country").innerHTML = '<option value="">Select country</option>' + Object.entries(COUNTRIES).map(([c,n])=>`<option value="${c}">${n}</option>`).join("");
+$("country").value = "DE";
 
+function syncDelivery(){
+  const ship = delivery()==="ship";
+  $("addr").classList.toggle("hidden", !ship);
+  ["street","houseNo","postcode","city","country"].forEach(n=>{ form.elements[n].required = ship; });
+  $("shipMsg").textContent = "";
+  render();
+}
+form.querySelectorAll("[name=delivery]").forEach(r=>r.addEventListener("change",syncDelivery));
+$("country").addEventListener("change",()=>{ $("shipMsg").textContent = ""; render(); });
+
+/* Adresssuche (Photon / OpenStreetMap) */
+let acTimer, acCtl, acItems = [], acActive = -1;
+const sug = $("sug"), q = $("q");
+function toAddr(f){
+  const p = f.properties || {};
+  const street = p.street || (p.osm_key==="highway" ? p.name : "");
+  if(!street) return null;
+  const city = p.city || p.town || p.village || p.municipality || p.locality || p.district || p.county || "";
+  const a = {street, no:p.housenumber||"", postcode:p.postcode||"", city, state:p.state||"", cc:(p.countrycode||"").toUpperCase(), country:p.country||""};
+  a.label = [`${a.street} ${a.no}`.trim(), [a.postcode,a.city].filter(Boolean).join(" "), a.country].filter(Boolean).join(", ");
+  return a;
+}
+function closeSug(){ sug.hidden = true; q.setAttribute("aria-expanded","false"); acActive = -1; }
+function showSug(){
+  if(!acItems.length){ closeSug(); return; }
+  sug.innerHTML = acItems.map((a,i)=>`<li role="option" data-i="${i}">${a.label}</li>`).join("");
+  sug.hidden = false; q.setAttribute("aria-expanded","true"); acActive = -1;
+  sug.scrollIntoView({block:"nearest"});
+}
+function markActive(){
+  sug.querySelectorAll("li").forEach((li,i)=>li.classList.toggle("on",i===acActive));
+}
+async function search(text){
+  if(acCtl) acCtl.abort(); acCtl = new AbortController();
+  try{
+    const r = await fetch("https://photon.komoot.io/api/?limit=8&q="+encodeURIComponent(text),{signal:acCtl.signal});
+    const j = await r.json(); const seen = new Set();
+    acItems = (j.features||[]).map(toAddr).filter(a=>a && !seen.has(a.label) && seen.add(a.label)).slice(0,5);
+    showSug();
+  }catch(e){ if(e.name!=="AbortError") closeSug(); }
+}
+function pick(i){
+  const a = acItems[i]; if(!a) return;
+  q.value = a.label;
+  form.elements.street.value = a.street; form.elements.houseNo.value = a.no;
+  form.elements.postcode.value = a.postcode; form.elements.city.value = a.city; form.elements.state.value = a.state;
+  if(COUNTRIES[a.cc]){ $("country").value = a.cc; $("shipMsg").textContent = ""; }
+  else{ $("country").value = ""; $("shipMsg").textContent = `Online shipping to ${a.country||"this country"} isn't available yet. Please message me on Instagram.`; }
+  closeSug(); render();
+  if(!a.no) form.elements.houseNo.focus();
+}
+q.addEventListener("focus",()=>{ setTimeout(()=>q.scrollIntoView({block:"center",behavior:"smooth"}),250); });
+q.addEventListener("input",()=>{
+  clearTimeout(acTimer);
+  const t = q.value.trim();
+  if(t.length<4){ closeSug(); return; }
+  acTimer = setTimeout(()=>search(t),350);
+});
+q.addEventListener("keydown",e=>{
+  if(sug.hidden) return;
+  const n = acItems.length;
+  if(e.key==="ArrowDown"){ e.preventDefault(); acActive = (acActive+1)%n; markActive(); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); acActive = (acActive-1+n)%n; markActive(); }
+  else if(e.key==="Enter" && acActive>=0){ e.preventDefault(); pick(acActive); }
+  else if(e.key==="Escape"){ e.stopPropagation(); closeSug(); }
+});
+sug.addEventListener("mousedown",e=>{ const li = e.target.closest("li"); if(li){ e.preventDefault(); pick(+li.dataset.i); } });
+q.addEventListener("blur",()=>setTimeout(closeSug,120));
+
+/* Seite */
 $("grid").addEventListener("click",e=>{
   const t = e.target.closest("[data-g]");
   if(t){ $("main-"+t.dataset.g).src = t.querySelector("img").src;
@@ -153,39 +297,48 @@ $("grid").addEventListener("click",e=>{
   const b = e.target.closest("[data-add]"); if(!b) return;
   const p = PRODUCTS.find(x=>x.id===b.dataset.add);
   if(p.sold || cart.some(l=>l.id===p.id)) return;
-  cart.push({id:p.id,name:p.name,size:p.size,price:p.price});
-  save(); render(); $("done").classList.add("hidden"); open();
+  cart.push({id:p.id,name:p.name,price:p.price});
+  save(); setStep("cart"); open();
 });
 $("lines").addEventListener("click",e=>{
   const r = e.target.dataset.r; if(r===undefined) return;
   cart.splice(r,1); save(); render();
 });
-$("openCart").onclick = open; $("closeCart").onclick = close; $("overlay").onclick = close;
-$("closeDone").onclick = () => { $("done").classList.add("hidden"); close(); };
+$("openCart").onclick = () => { if(step==="done") setStep("cart"); open(); };
+$("closeCart").onclick = close; $("overlay").onclick = close;
+$("back").onclick = () => setStep("cart");
+$("closeDone").onclick = () => { setStep("cart"); close(); };
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
+$("cta").onclick = () => { if(step==="cart"){ if(cart.length){ setStep("form"); syncDelivery(); } } else placeOrder(); };
+form.addEventListener("submit",e=>{ e.preventDefault(); placeOrder(); });
 
-$("order").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const f = new FormData(e.target); if(f.get("_honey")) return;
-  const ship = currentShip(), total = cart.reduce((a,l)=>a+l.price,0) + ship.price;
+async function placeOrder(){
+  if(!form.reportValidity()) return;
+  const f = new FormData(form); if(f.get("_honey")) return;
+  const sh = shipInfo(); if(!sh.ok) return;
+  const total = cart.reduce((a,l)=>a+l.price,0) + sh.cost;
+  const first = f.get("firstName").trim(), last = f.get("lastName").trim();
+  const addr = delivery()==="pickup" ? "Pickup in Frankfurt (no address needed)" :
+    [`${first} ${last}`, `${f.get("street").trim()} ${f.get("houseNo").trim()}`, `${f.get("postcode").trim()} ${f.get("city").trim()}`, f.get("state").trim(), COUNTRIES[f.get("country")]].filter(Boolean).join("\n");
   const items = cart.map(l=>`${l.name} – ${eur(l.price)}`).join("\n");
-  $("send").disabled = true; $("err").textContent = "Sending …";
+  $("cta").disabled = true; $("err").textContent = "Sending …";
   try{
     const res = await fetch("https://formsubmit.co/ajax/"+FORM_TARGET,{
       method:"POST",
       headers:{"Content-Type":"application/json",Accept:"application/json"},
-      body:JSON.stringify({_subject:"New order: "+eur(total),_template:"table",_captcha:"false",
-        Name:f.get("Name"),email:f.get("email"),Address:f.get("Address"),Order:items,Shipping:ship.label+" ("+(ship.price?eur(ship.price):"free")+")",Total:eur(total),Message:f.get("Message")})
+      body:JSON.stringify({_subject:`New order: ${eur(total)} – ${first} ${last}`,_template:"table",_captcha:"false",
+        "First name":first,"Last name":last,email:f.get("email").trim(),Phone:f.get("phone").trim()||"–",
+        Delivery:sh.label,Address:addr,Order:items,Shipping:sh.cost?eur(sh.cost):"Free",Total:eur(total),Message:f.get("message").trim()||"–"})
     });
     if(!res.ok) throw new Error();
     $("paypal").href = `https://paypal.me/${PAYPAL_USER}/${total.toFixed(2)}EUR`;
-    cart = []; save(); render(); e.target.reset(); $("err").textContent = "";
-    $("done").classList.remove("hidden"); $("checkout").classList.add("hidden");
+    cart = []; save(); form.reset(); $("country").value = "DE"; $("err").textContent = ""; q.value = "";
+    setStep("done");
   }catch(err){
     $("err").textContent = "Something went wrong. Please try again or message me on Instagram.";
   }
-  $("send").disabled = false;
-});
+  $("cta").disabled = false;
+}
 const cur = {};
 const lb = $("lb"), lbImg = $("lbImg");
 let lbList = [], lbI = 0, z = 1, tx = 0, ty = 0, down = false, moved = false, sx = 0, sy = 0, stx = 0, sty = 0;
@@ -256,7 +409,7 @@ function notifyAbandoned(){
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") notifyAbandoned(); });
 window.addEventListener("pagehide",notifyAbandoned);
 $("y").textContent = new Date().getFullYear();
-render();
+setStep("cart");
 </script>
 </body>
 </html>
