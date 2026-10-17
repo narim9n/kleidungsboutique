@@ -1,60 +1,60 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>narimanghanai – handgenähte Kleidung</title>
-<meta name="description" content="Selbstgenähte Kleidung in kleinen Stückzahlen. Jedes Teil ein Unikat.">
+<title>narimanghanai – handmade clothing</title>
+<meta name="description" content="Handmade clothing. Every piece is one of a kind.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
   <div class="wrap">
-    <a class="logo" href="/">narimanghanai</a>
-    <button class="cartbtn" id="openCart" aria-label="Warenkorb öffnen">Warenkorb <b id="count">0</b></button>
+    <div class="brand"><span class="arabic" lang="ar" dir="rtl">لَا إِلٰهَ إِلَّا ٱللَّٰهُ مُحَمَّدٌ رَسُولُ ٱللَّٰهِ</span><a class="logo" href="/">narimanghanai</a></div>
+    <button class="cartbtn" id="openCart" aria-label="Open cart">Cart <b id="count">0</b></button>
   </div>
 </header>
 
 <main class="wrap">
-  <h1>Aktuelle Stücke</h1>
+  <h1>Current pieces</h1>
   <div class="grid" id="grid"></div>
 </main>
 
 <footer>
   <div class="wrap">
-    <a href="groessen.html">Größentabelle</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a>
+    <a href="groessen.html">Size guide</a><a href="impressum.html">Legal notice</a><a href="datenschutz.html">Privacy</a>
     <a href="https://instagram.com/narimanghanai" target="_blank" rel="noopener">Instagram</a><a href="https://tiktok.com/@narimanghanai" target="_blank" rel="noopener">TikTok</a>
     <p style="margin-top:10px">© <span id="y"></span> narimanghanai</p>
   </div>
 </footer>
 
 <div class="overlay" id="overlay"></div>
-<aside class="drawer" aria-label="Warenkorb">
-  <div class="dhead"><span>Warenkorb</span><button id="closeCart" aria-label="Schließen">×</button></div>
+<aside class="drawer" aria-label="Cart">
+  <div class="dhead"><span>Cart</span><button id="closeCart" aria-label="Close">×</button></div>
   <div class="dbody">
-    <div id="empty" class="hint">Dein Warenkorb ist leer.</div>
+    <div id="empty" class="hint">Your cart is empty.</div>
     <div id="lines"></div>
     <div id="checkout" class="hidden" style="display:grid;gap:12px">
-      <div class="total"><span>Summe</span><span id="sum"></span></div>
-      <p class="hint">Versand wird nach deiner Bestellung mit dir abgesprochen. Bezahlt wird per PayPal.</p>
+      <div class="total"><span>Total</span><span id="sum"></span></div>
+      <p class="hint">Every piece is unique. Shipping is arranged with you after you order. Payment is made via PayPal.</p>
       <form id="order" style="display:grid;gap:12px">
         <label>Name <input name="Name" required autocomplete="name"></label>
-        <label>E-Mail <input name="email" type="email" required autocomplete="email"></label>
-        <label>Lieferadresse <textarea name="Adresse" required autocomplete="street-address"></textarea></label>
-        <label>Nachricht (optional) <input name="Nachricht"></label>
+        <label>Email <input name="email" type="email" required autocomplete="email"></label>
+        <label>Delivery address <textarea name="Address" required autocomplete="street-address"></textarea></label>
+        <label>Message (optional) <input name="Message"></label>
         <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-        <button class="btn" id="send" type="submit">Bestellung senden</button>
+        <button class="btn" id="send" type="submit">Place order</button>
         <p id="err" class="hint" role="alert"></p>
       </form>
     </div>
     <div id="done" class="hidden" style="display:grid;gap:12px">
-      <h2 style="margin:0">Danke für deine Bestellung!</h2>
-      <p>Sie ist bei mir angekommen. Ich melde mich per E-Mail bei dir. Du kannst jetzt schon bezahlen:</p>
-      <a class="btn" id="paypal" href="#" target="_blank" rel="noopener">Mit PayPal bezahlen</a>
-      <button class="btn ghost" id="closeDone" type="button">Weiter stöbern</button>
+      <h2 style="margin:0">Thank you for your order!</h2>
+      <p>I received it and will email you soon. You can already pay now:</p>
+      <a class="btn" id="paypal" href="#" target="_blank" rel="noopener">Pay with PayPal</a>
+      <button class="btn ghost" id="closeDone" type="button">Keep browsing</button>
     </div>
   </div>
 </aside>
@@ -62,59 +62,59 @@
 <script>
 // ==== HIER ANPASSEN ====
 const FORM_TARGET = "nghanai@icloud.com";   // später durch den Formsubmit-Alias ersetzen
-const PAYPAL_USER = "DEIN_PAYPAL_NAME";      // aus deinem paypal.me/DEIN_PAYPAL_NAME Link
-const SIZES = ["XS","S","M","L","XL"];
+const PAYPAL_USER = "narimanGhanai";
+// Jedes Teil ist ein Unikat. sold:true markiert es als verkauft.
 const PRODUCTS = [
-  {id:"overshirt", name:"Leinen-Overshirt", meta:"Leinen, Perlmuttknöpfe", price:68, color:"#5C7A6B", img:""},
-  {id:"hose", name:"Weite Hose", meta:"Baumwolltwill, Gummizug", price:54, color:"#B5533C", img:""},
-  {id:"rock", name:"Wickelrock", meta:"Viskose, mit Taschen", price:46, color:"#22305A", img:""},
-  {id:"jacke", name:"Patchwork-Jacke", meta:"Unikat aus Stoffresten", price:120, color:"#8A6F2A", img:""}
+  {id:"overshirt", name:"Linen overshirt", meta:"Linen, mother-of-pearl buttons", size:"M", price:68, color:"#5C7A6B", img:"", sold:false},
+  {id:"hose", name:"Wide trousers", meta:"Cotton twill, elastic waist", size:"S", price:54, color:"#B5533C", img:"", sold:false},
+  {id:"rock", name:"Wrap skirt", meta:"Viscose, with pockets", size:"M", price:46, color:"#22305A", img:"", sold:false},
+  {id:"jacke", name:"Patchwork jacket", meta:"Made from fabric scraps", size:"L", price:120, color:"#8A6F2A", img:"", sold:false}
 ];
 // =======================
 
 const $ = id => document.getElementById(id);
-const eur = n => n.toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}) + " €";
+const eur = n => new Intl.NumberFormat("en-IE",{style:"currency",currency:"EUR"}).format(n);
 let cart = [];
-try{ cart = JSON.parse(localStorage.getItem("cart")||"[]"); }catch(e){}
-const save = () => { try{ localStorage.setItem("cart",JSON.stringify(cart)); }catch(e){} };
+try{ cart = JSON.parse(localStorage.getItem("cart2")||"[]"); }catch(e){}
+const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }catch(e){} };
 
 $("grid").innerHTML = PRODUCTS.map(p=>`
   <article class="tile">
     <div class="ph" style="background:${p.color}">${p.img?`<img src="${p.img}" alt="${p.name}">`:p.name[0]}</div>
-    <h3>${p.name}</h3><div class="meta">${p.meta}</div>
+    <h3>${p.name}</h3><div class="meta">${p.meta} · Size ${p.size}</div>
+    <span class="tag">Unique piece</span>
     <div class="price">${eur(p.price)}</div>
-    <div class="row">
-      <select aria-label="Größe für ${p.name}" id="size-${p.id}">${SIZES.map(s=>`<option>${s}</option>`).join("")}</select>
-      <button class="btn" data-add="${p.id}">In den Warenkorb</button>
-    </div>
+    <div class="row"><button class="btn" style="flex:1" data-add="${p.id}"></button></div>
   </article>`).join("");
 
 function render(){
-  const n = cart.reduce((a,l)=>a+l.qty,0), total = cart.reduce((a,l)=>a+l.qty*l.price,0);
-  $("count").textContent = n;
-  $("empty").classList.toggle("hidden", n>0);
-  $("checkout").classList.toggle("hidden", n===0);
+  const total = cart.reduce((a,l)=>a+l.price,0);
+  $("count").textContent = cart.length;
+  $("empty").classList.toggle("hidden", cart.length>0);
+  $("checkout").classList.toggle("hidden", cart.length===0);
   $("lines").innerHTML = cart.map((l,i)=>`
-    <div class="line"><div><b>${l.name}</b><br><small>Größe ${l.size}</small>
-      <div class="qty"><button data-m="${i}" aria-label="Weniger">−</button>${l.qty}<button data-p="${i}" aria-label="Mehr">+</button></div></div>
-      <div>${eur(l.price*l.qty)}</div></div>`).join("");
+    <div class="line"><div><b>${l.name}</b><br><small>Size ${l.size}</small><br>
+      <button class="rm" data-r="${i}">Remove</button></div><div>${eur(l.price)}</div></div>`).join("");
   $("sum").textContent = eur(total);
+  PRODUCTS.forEach(p=>{
+    const b = document.querySelector(`[data-add="${p.id}"]`), inCart = cart.some(l=>l.id===p.id);
+    b.textContent = p.sold ? "Sold" : inCart ? "In your cart" : "Add to cart";
+    b.disabled = p.sold || inCart;
+  });
 }
 const open = () => document.body.classList.add("open");
 const close = () => document.body.classList.remove("open");
 
 $("grid").addEventListener("click",e=>{
   const b = e.target.closest("[data-add]"); if(!b) return;
-  const p = PRODUCTS.find(x=>x.id===b.dataset.add), size = $("size-"+p.id).value;
-  const l = cart.find(x=>x.id===p.id && x.size===size);
-  l ? l.qty++ : cart.push({id:p.id,name:p.name,size,price:p.price,qty:1});
+  const p = PRODUCTS.find(x=>x.id===b.dataset.add);
+  if(p.sold || cart.some(l=>l.id===p.id)) return;
+  cart.push({id:p.id,name:p.name,size:p.size,price:p.price});
   save(); render(); $("done").classList.add("hidden"); open();
 });
 $("lines").addEventListener("click",e=>{
-  const m = e.target.dataset.m, p = e.target.dataset.p;
-  if(m!==undefined){ cart[m].qty--; if(cart[m].qty<=0) cart.splice(m,1); }
-  if(p!==undefined){ cart[p].qty++; }
-  save(); render();
+  const r = e.target.dataset.r; if(r===undefined) return;
+  cart.splice(r,1); save(); render();
 });
 $("openCart").onclick = open; $("closeCart").onclick = close; $("overlay").onclick = close;
 $("closeDone").onclick = () => { $("done").classList.add("hidden"); close(); };
@@ -123,22 +123,22 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
 $("order").addEventListener("submit",async e=>{
   e.preventDefault();
   const f = new FormData(e.target); if(f.get("_honey")) return;
-  const total = cart.reduce((a,l)=>a+l.qty*l.price,0);
-  const items = cart.map(l=>`${l.qty}x ${l.name} (Größe ${l.size}) – ${eur(l.price*l.qty)}`).join("\n");
-  $("send").disabled = true; $("err").textContent = "Wird gesendet …";
+  const total = cart.reduce((a,l)=>a+l.price,0);
+  const items = cart.map(l=>`${l.name} (size ${l.size}) – ${eur(l.price)}`).join("\n");
+  $("send").disabled = true; $("err").textContent = "Sending …";
   try{
     const res = await fetch("https://formsubmit.co/ajax/"+FORM_TARGET,{
       method:"POST",
       headers:{"Content-Type":"application/json",Accept:"application/json"},
-      body:JSON.stringify({_subject:"Neue Bestellung: "+eur(total),_template:"table",_captcha:"false",
-        Name:f.get("Name"),email:f.get("email"),Adresse:f.get("Adresse"),Bestellung:items,Summe:eur(total),Nachricht:f.get("Nachricht")})
+      body:JSON.stringify({_subject:"New order: "+eur(total),_template:"table",_captcha:"false",
+        Name:f.get("Name"),email:f.get("email"),Address:f.get("Address"),Order:items,Total:eur(total),Message:f.get("Message")})
     });
     if(!res.ok) throw new Error();
     $("paypal").href = `https://paypal.me/${PAYPAL_USER}/${total.toFixed(2)}EUR`;
     cart = []; save(); render(); e.target.reset(); $("err").textContent = "";
     $("done").classList.remove("hidden"); $("checkout").classList.add("hidden");
   }catch(err){
-    $("err").textContent = "Das hat nicht geklappt. Bitte versuch es nochmal oder schreib mir auf Instagram.";
+    $("err").textContent = "Something went wrong. Please try again or message me on Instagram.";
   }
   $("send").disabled = false;
 });
