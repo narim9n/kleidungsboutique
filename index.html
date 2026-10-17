@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <header>
@@ -62,12 +62,15 @@
   </div>
 </aside>
 
-<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
-  <button class="lb-x" id="lbX" aria-label="Close">×</button>
-  <button class="lb-p" id="lbP" aria-label="Previous photo">‹</button>
+<div class="lb" id="lb" tabindex="-1" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <div class="lb-top">
+    <button class="lbtn" id="lbF" aria-label="Toggle full screen" hidden><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    <button class="lbtn" id="lbX" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+  </div>
+  <button class="lbtn lb-p" id="lbP" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button>
   <img id="lbImg" alt="" draggable="false">
-  <button class="lb-n" id="lbN" aria-label="Next photo">›</button>
-  <div class="lb-c" id="lbC"></div>
+  <button class="lbtn lb-n" id="lbN" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8"/></svg></button>
+  <div class="lb-dots" id="lbDots"></div>
 </div>
 
 <script>
@@ -103,7 +106,7 @@ const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }c
 
 $("grid").innerHTML = PRODUCTS.map(p=>`
   <article class="product" data-pid="${p.id}">
-    <div class="gallery"><button class="fs" aria-label="View fullscreen">⤢</button>
+    <div class="gallery"><button class="fs" aria-label="View full screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <img class="main" id="main-${p.id}" src="${p.images[0]}" alt="${p.name}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}">
       <div class="thumbs">${p.images.map((u,i)=>`<button data-g="${p.id}" data-src="${u}" data-i="${i}" class="${i?"":"on"}" aria-label="Photo ${i+1}"><img src="${u}" alt="" onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.src.replace('images/','')}"></button>`).join("")}</div>
     </div>
@@ -188,11 +191,30 @@ const lb = $("lb"), lbImg = $("lbImg");
 let lbList = [], lbI = 0, z = 1, tx = 0, ty = 0, down = false, moved = false, sx = 0, sy = 0, stx = 0, sty = 0;
 function apply(){ lbImg.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; lbImg.style.cursor = z>1 ? "grab" : "zoom-in"; }
 function resetZoom(){ z = 1; tx = ty = 0; apply(); }
-function lbShow(i){ lbI = (i + lbList.length) % lbList.length; lbImg.src = lbList[lbI]; $("lbC").textContent = (lbI+1)+" / "+lbList.length; resetZoom(); }
-function lbOpen(list,i){ lbList = list; lb.hidden = false; document.body.classList.add("noscroll"); lbShow(i); $("lbX").focus(); }
-function lbClose(){ lb.hidden = true; document.body.classList.remove("noscroll"); }
-$("lbX").onclick = lbClose; $("lbP").onclick = () => lbShow(lbI-1); $("lbN").onclick = () => lbShow(lbI+1);
+function lbShow(i){
+  lbI = (i + lbList.length) % lbList.length; lbImg.src = lbList[lbI];
+  $("lbDots").querySelectorAll("button").forEach((d,k)=>d.classList.toggle("on",k===lbI));
+  resetZoom();
+}
+function lbOpen(list,i){
+  lbList = list; lb.classList.toggle("single", list.length<2);
+  $("lbDots").innerHTML = list.map((_,k)=>`<button data-d="${k}" aria-label="Photo ${k+1}"></button>`).join("");
+  lb.hidden = false; document.body.classList.add("noscroll"); lbShow(i); lb.focus();
+}
+function lbClose(){
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  lb.hidden = true; document.body.classList.remove("noscroll");
+}
+function toggleFull(){
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  else lb.requestFullscreen().catch(()=>{});
+}
+if(document.fullscreenEnabled) $("lbF").hidden = false;
+$("lbF").onclick = toggleFull; $("lbX").onclick = lbClose;
+$("lbP").onclick = () => lbShow(lbI-1); $("lbN").onclick = () => lbShow(lbI+1);
+$("lbDots").addEventListener("click",e=>{ const d = e.target.closest("[data-d]"); if(d) lbShow(+d.dataset.d); });
 lb.addEventListener("click",e=>{ if(e.target===lb) lbClose(); });
+document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement && !lb.hidden) lbImg.focus?.(); });
 lbImg.addEventListener("pointerdown",e=>{ down = true; moved = false; sx = e.clientX; sy = e.clientY; stx = tx; sty = ty; lbImg.style.transition = "none"; lbImg.setPointerCapture(e.pointerId); });
 lbImg.addEventListener("pointermove",e=>{
   if(!down) return;
@@ -211,9 +233,10 @@ lbImg.addEventListener("pointerup",e=>{
 });
 document.addEventListener("keydown",e=>{
   if(lb.hidden) return;
-  if(e.key==="Escape") lbClose();
+  if(e.key==="Escape" && !document.fullscreenElement) lbClose();
   if(e.key==="ArrowLeft") lbShow(lbI-1);
   if(e.key==="ArrowRight") lbShow(lbI+1);
+  if(e.key==="f" || e.key==="F") toggleFull();
 });
 
 let notified = "";
