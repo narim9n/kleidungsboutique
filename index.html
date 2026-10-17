@@ -19,7 +19,14 @@
 </header>
 
 <main class="wrap shopwrap">
-  <h1 class="collection">Winter Collection 26</h1>
+  <div class="colbar">
+    <h1 class="collection" id="colTitle"></h1>
+    <div class="cd">
+      <button class="cbtn" id="cBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="cMenu">Collections
+        <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <ul class="cmenu" id="cMenu" role="listbox" aria-label="Collections" hidden></ul>
+    </div>
+  </div>
   <div class="shop" id="grid"></div>
 </main>
 
@@ -138,8 +145,12 @@ const SHIPPING = {de:4.99, eu:9.99, pickup:0};
 const COUNTRIES = {DE:"Germany",AT:"Austria",BE:"Belgium",BG:"Bulgaria",HR:"Croatia",CY:"Cyprus",CZ:"Czechia",DK:"Denmark",EE:"Estonia",FI:"Finland",FR:"France",GR:"Greece",HU:"Hungary",IE:"Ireland",IT:"Italy",LV:"Latvia",LT:"Lithuania",LU:"Luxembourg",MT:"Malta",NL:"Netherlands",PL:"Poland",PT:"Portugal",RO:"Romania",SK:"Slovakia",SI:"Slovenia",ES:"Spain",SE:"Sweden"};
 // Grobe Grenzen je Land (Länge min, Breite min, Länge max, Breite max) für die Adresssuche
 const BBOX = {DE:[5.87,47.27,15.04,55.06],AT:[9.53,46.37,17.17,49.02],BE:[2.5,49.5,6.41,51.51],BG:[22.35,41.23,28.61,44.22],HR:[13.49,42.39,19.45,46.55],CY:[32.25,34.55,34.6,35.7],CZ:[12.09,48.55,18.86,51.06],DK:[8.0,54.5,15.2,57.8],EE:[21.7,57.5,28.2,59.7],FI:[20.5,59.8,31.6,70.1],FR:[-5.2,41.3,9.7,51.2],GR:[19.3,34.8,28.3,41.8],HU:[16.1,45.7,22.9,48.6],IE:[-10.7,51.4,-5.9,55.4],IT:[6.6,36.6,18.6,47.1],LV:[20.9,55.6,28.3,58.1],LT:[20.9,53.9,26.9,56.5],LU:[5.7,49.4,6.6,50.2],MT:[14.1,35.8,14.6,36.1],NL:[3.3,50.7,7.3,53.6],PL:[14.1,49.0,24.2,54.9],PT:[-9.6,36.9,-6.1,42.2],RO:[20.2,43.6,29.8,48.3],SK:[16.8,47.7,22.6,49.6],SI:[13.3,45.4,16.6,46.9],ES:[-9.4,35.9,4.4,43.9],SE:[10.9,55.3,24.2,69.1]};
+// Collections: hier neue hinzufügen. Beim Produkt dann collection:"id" eintragen.
+const COLLECTIONS = [
+  {id:"w26", name:"Winter Collection 26"}
+];
 const PRODUCTS = [
-  {id:"flared-jeans", name:"Flared jeans with double waist",
+  {id:"flared-jeans", name:"Flared jeans with double waist", collection:"w26", hoverImg:3,
    meta:"Handmade, one of a kind",
    price:60, sold:false,
    images:[
@@ -159,23 +170,29 @@ let cart = [];
 try{ cart = JSON.parse(localStorage.getItem("cart2")||"[]"); }catch(e){}
 const save = () => { try{ localStorage.setItem("cart2",JSON.stringify(cart)); }catch(e){} };
 
-$("grid").innerHTML = PRODUCTS.map(p=>`
-  <button class="t" data-open="${p.id}" aria-label="${p.name}, ${eur(p.price)}" title="${p.name}">
-    ${p.images.map((u,i)=>`<img src="${u}" alt="" class="${i?"":"on"}">`).join("")}${p.sold?'<span class="soldtag">Sold</span>':''}
-  </button>`).join("");
-
-/* Hover-Slideshow auf den Kacheln */
-if(matchMedia("(hover:hover)").matches && !matchMedia("(prefers-reduced-motion:reduce)").matches){
-  document.querySelectorAll(".t").forEach(t=>{
-    const imgs = t.querySelectorAll("img"); let i = 0, timer = null;
-    if(imgs.length<2) return;
-    const go = n => { imgs[i].classList.remove("on"); i = n % imgs.length; imgs[i].classList.add("on"); };
-    const start = () => { if(timer) return; go(1); timer = setInterval(()=>go(i+1), 750); };
-    const stop = () => { clearInterval(timer); timer = null; go(0); };
-    t.addEventListener("mouseenter",start); t.addEventListener("mouseleave",stop);
-    t.addEventListener("focus",start); t.addEventListener("blur",stop); t.addEventListener("click",stop);
-  });
+let activeCol = COLLECTIONS[0].id;
+function renderGrid(){
+  const list = activeCol==="all" ? PRODUCTS : PRODUCTS.filter(p=>p.collection===activeCol);
+  $("colTitle").textContent = activeCol==="all" ? "All pieces" : COLLECTIONS.find(c=>c.id===activeCol).name;
+  $("grid").innerHTML = list.length ? list.map(p=>{
+    const h = p.images[p.hoverImg!==undefined ? p.hoverImg : 1];
+    return `<button class="t" data-open="${p.id}" aria-label="${p.name}, ${eur(p.price)}" title="${p.name}">
+      <img class="m" src="${p.images[0]}" alt="">${p.images.length>1?`<img class="h" src="${h}" alt="">`:""}${p.sold?'<span class="soldtag">Sold</span>':''}
+    </button>`;}).join("") : '<p class="hint">Nothing here yet.</p>';
 }
+function renderMenu(){
+  const n = id => id==="all" ? PRODUCTS.length : PRODUCTS.filter(p=>p.collection===id).length;
+  $("cMenu").innerHTML = [{id:"all",name:"All pieces"},...COLLECTIONS].map(c=>
+    `<li role="option" data-c="${c.id}" aria-selected="${c.id===activeCol}"><span>${c.name}</span><span class="n">${n(c.id)}</span></li>`).join("");
+}
+function setCollection(id){ activeCol = id; renderGrid(); renderMenu(); closeMenu(); }
+function openMenu(){ $("cMenu").hidden = false; $("cBtn").setAttribute("aria-expanded","true"); }
+function closeMenu(){ $("cMenu").hidden = true; $("cBtn").setAttribute("aria-expanded","false"); }
+$("cBtn").addEventListener("click",e=>{ e.stopPropagation(); $("cMenu").hidden ? openMenu() : closeMenu(); });
+$("cMenu").addEventListener("click",e=>{ const li = e.target.closest("[data-c]"); if(li) setCollection(li.dataset.c); });
+document.addEventListener("click",e=>{ if(!e.target.closest(".cd")) closeMenu(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !$("cMenu").hidden){ closeMenu(); e.preventDefault(); $("cBtn").focus(); } });
+renderGrid(); renderMenu();
 
 function productHTML(p){
   return `
