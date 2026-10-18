@@ -5,15 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>narimanghanai – handmade clothing</title>
 <meta name="description" content="Handmade clothing. Every piece is one of a kind.">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="narimanghanai">
+<meta property="og:title" content="narimanghanai – Fall Collection 26">
+<meta property="og:description" content="Handmade clothing. Every piece is one of a kind.">
+<meta property="og:image" content="https://DEINEDOMAIN.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://DEINEDOMAIN.com/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="narimanghanai – Fall Collection 26">
+<meta name="twitter:description" content="Handmade clothing. Every piece is one of a kind.">
+<meta name="twitter:image" content="https://DEINEDOMAIN.com/og-image.jpg">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<script>try{if(localStorage.getItem("ng_unlocked")==="1")document.documentElement.classList.add("unlocked")}catch(e){}</script>
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
+<section class="gate" id="gate" aria-label="Enter password">
+  <div class="gate-top">
+    <span class="gate-ar" lang="ar" dir="rtl">لَا إِلٰهَ إِلَّا ٱللَّٰهُ مُحَمَّدٌ رَسُولُ ٱللَّٰهِ</span>
+    <div class="gate-brand">narimanghanai</div>
+    <div class="gate-sub">Fall Collection 26</div>
+  </div>
+  <img class="gate-img" id="gateImg" src="zombie.gif" alt="" onerror="this.onerror=null;this.src='zombie.jpg'">
+  <form class="gate-form" id="gateForm" autocomplete="off">
+    <label class="sr" for="gatePw">Password</label>
+    <div class="gate-row" id="gateRow">
+      <input id="gatePw" type="password" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+      <button type="submit">Enter</button>
+    </div>
+    <p class="gate-msg" id="gateMsg" role="status">Password needed. Everyone else: wait for the drop.</p>
+  </form>
+  <nav class="gate-links" aria-label="Info">
+    <a href="impressum.html">Legal notice</a><a href="widerruf.html">Withdrawal</a><a href="datenschutz.html">Privacy</a>
+    <a href="https://instagram.com/narimanghanai" target="_blank" rel="noopener">Instagram</a><a href="https://tiktok.com/@narimanghanai" target="_blank" rel="noopener">TikTok</a>
+  </nav>
+</section>
 <header>
   <div class="wrap">
     <div class="brand"><span class="arabic" lang="ar" dir="rtl">لَا إِلٰهَ إِلَّا ٱللَّٰهُ مُحَمَّدٌ رَسُولُ ٱللَّٰهِ</span><a class="logo" href="/">narimanghanai</a></div>
@@ -112,6 +146,7 @@
 
     <div id="done" class="hidden">
       <h2 style="margin:0 0 8px">Thank you for your order!</h2>
+      <p id="orderNo" style="font-weight:600;margin:0 0 6px"></p>
       <p>I received it and will email you soon. You can already pay now:</p>
       <a class="btn block" id="paypal" href="#" target="_blank" rel="noopener" style="margin-top:14px;text-align:center">Pay with PayPal</a>
       <button class="btn ghost block" id="closeDone" type="button" style="margin-top:10px">Keep browsing</button>
@@ -149,6 +184,10 @@
 // ==== HIER ANPASSEN ====
 const FORM_TARGET = "ordershere901@gmail.com";   // Bestellungen kommen hierhin. Nach der Aktivierung durch den Formsubmit-Alias ersetzen
 const PAYPAL_USER = "narimanGhanai";
+// Bestätigungsmail an Kunden über EmailJS (emailjs.com). Leer lassen = es wird keine Bestätigung verschickt.
+const EMAILJS = {service:"", template:"", key:""};
+// Passwort für den Einlass-Bildschirm. Pro Drop einfach ändern.
+const PASSWORD = "2006";
 // Jedes Teil ist ein Unikat. sold:true markiert es als verkauft.
 // Versandkosten in Euro (DHL Paket bis 2 kg, Online-Frankierung, Stand 2026): Deutschland 6,19 / EU 14,49
 const SHIPPING = {de:6.19, eu:14.49, pickup:0};
@@ -400,6 +439,13 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape" && document.body.cl
 $("cta").onclick = () => { if(step==="cart"){ if(cart.length){ setStep("form"); syncDelivery(); } } else placeOrder(); };
 form.addEventListener("submit",e=>{ e.preventDefault(); placeOrder(); });
 
+function sendConfirmation(params){
+  if(!EMAILJS.service || !EMAILJS.template || !EMAILJS.key) return;
+  fetch("https://api.emailjs.com/api/v1.0/email/send",{
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({service_id:EMAILJS.service, template_id:EMAILJS.template, user_id:EMAILJS.key, template_params:params})
+  }).catch(()=>{});
+}
 async function placeOrder(){
   if(!form.reportValidity()) return;
   const f = new FormData(form); if(f.get("_honey")) return;
@@ -409,17 +455,21 @@ async function placeOrder(){
   const addr = delivery()==="pickup" ? "Pickup in Frankfurt (no address needed)" :
     [`${first} ${last}`, `${f.get("street").trim()} ${f.get("houseNo").trim()}`, `${f.get("postcode").trim()} ${f.get("city").trim()}`, f.get("state").trim(), COUNTRIES[f.get("country")]].filter(Boolean).join("\n");
   const items = cart.map(l=>`${l.name} – ${eur(l.price)}`).join("\n");
+  const orderId = "NG-" + new Date().toISOString().slice(2,10).replace(/-/g,"") + "-" + Math.random().toString(36).slice(2,6).toUpperCase();
+  const paypalLink = `https://paypal.me/${PAYPAL_USER}/${total.toFixed(2)}EUR`;
   $("cta").disabled = true; $("err").textContent = "Sending …";
   try{
     const res = await fetch("https://formsubmit.co/ajax/"+FORM_TARGET,{
       method:"POST",
       headers:{"Content-Type":"application/json",Accept:"application/json"},
-      body:JSON.stringify({_subject:`New order: ${eur(total)} – ${first} ${last}`,_template:"table",_captcha:"false",
-        "First name":first,"Last name":last,email:f.get("email").trim(),Phone:f.get("phone").trim()||"–",
+      body:JSON.stringify({_subject:`New order ${orderId}: ${eur(total)} – ${first} ${last}`,_template:"table",_captcha:"false",
+        "Order number":orderId,"First name":first,"Last name":last,email:f.get("email").trim(),Phone:f.get("phone").trim()||"–",
         Delivery:sh.label,Address:addr,Order:items,Shipping:sh.cost?eur(sh.cost):"Free",Total:eur(total),Message:f.get("message").trim()||"–"})
     });
     if(!res.ok) throw new Error();
-    $("paypal").href = `https://paypal.me/${PAYPAL_USER}/${total.toFixed(2)}EUR`;
+    $("paypal").href = paypalLink; $("orderNo").textContent = "Order number: " + orderId;
+    sendConfirmation({to_email:f.get("email").trim(), customer_name:first, order_id:orderId, order_items:items,
+      delivery_method:sh.label, shipping_cost:sh.cost?eur(sh.cost):"Free", total:eur(total), address:addr, paypal_link:paypalLink});
     cart = []; save(); form.reset(); $("country").value = "DE"; syncCountry(); $("err").textContent = ""; q.value = "";
     setStep("done");
   }catch(err){
@@ -499,7 +549,25 @@ window.addEventListener("pagehide",notifyAbandoned);
 $("y").textContent = new Date().getFullYear();
 setStep("cart");
 document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !e.defaultPrevented && !$("pm").hidden) closeProduct(); });
-if(location.hash.length>1) openProduct(decodeURIComponent(location.hash.slice(1)));
+
+/* Einlass-Bildschirm */
+const lockInert = on => document.querySelectorAll("header,main,footer").forEach(e=>on ? e.setAttribute("inert","") : e.removeAttribute("inert"));
+const isUnlocked = () => document.documentElement.classList.contains("unlocked");
+if(!isUnlocked()){ lockInert(true); setTimeout(()=>$("gatePw").focus(),300); }
+$("gateForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  if($("gatePw").value.trim()===PASSWORD){
+    try{ localStorage.setItem("ng_unlocked","1"); }catch(_){}
+    $("gate").classList.add("out"); lockInert(false);
+    setTimeout(()=>document.documentElement.classList.add("unlocked"),650);
+    if(location.hash.length>1) openProduct(decodeURIComponent(location.hash.slice(1)));
+  }else{
+    $("gateMsg").textContent = "Wrong password. Wait for the drop."; $("gateMsg").classList.add("err");
+    const row = $("gateRow"); row.classList.remove("shake"); void row.offsetWidth; row.classList.add("shake");
+    $("gatePw").value = ""; $("gatePw").focus();
+  }
+});
+if(location.hash.length>1 && isUnlocked()) openProduct(decodeURIComponent(location.hash.slice(1)));
 </script>
 </body>
 </html>
