@@ -219,7 +219,7 @@ input,textarea,select{font-weight:400}
 .gate{position:fixed;inset:0;z-index:100;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:max(24px,env(safe-area-inset-top)) 24px max(20px,env(safe-area-inset-bottom));overflow:auto;transition:opacity .6s ease,visibility .6s}
 html.unlocked .gate{display:none}
 .gate.out{opacity:0;visibility:hidden}
-html:not(.unlocked) body{overflow:hidden}
+html.gated:not(.unlocked) body{overflow:hidden}
 .gate-top{text-align:center}
 .gate-ar{display:block;font-family:"Amiri","Noto Naskh Arabic",serif;font-weight:700;font-size:clamp(1.3rem,4.4vw,1.9rem);line-height:1.6;direction:rtl}
 .gate-brand{font-weight:800;font-size:clamp(1.1rem,3.2vw,1.4rem);letter-spacing:-.02em;line-height:1.2}
