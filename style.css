@@ -216,26 +216,28 @@ input,textarea,select{font-weight:400}
 
 /* Einlass-Bildschirm */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.gate{position:fixed;inset:0;z-index:100;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;padding:max(20px,env(safe-area-inset-top)) 20px max(18px,env(safe-area-inset-bottom));overflow:auto;transition:opacity .6s ease,visibility .6s}
+.gate{position:fixed;inset:0;z-index:100;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:max(24px,env(safe-area-inset-top)) 24px max(20px,env(safe-area-inset-bottom));overflow:auto;transition:opacity .6s ease,visibility .6s}
 html.unlocked .gate{display:none}
 .gate.out{opacity:0;visibility:hidden}
 html:not(.unlocked) body{overflow:hidden}
 .gate-top{text-align:center}
-.gate-ar{display:block;font-family:"Amiri","Noto Naskh Arabic",serif;font-weight:700;font-size:clamp(1.5rem,5vw,2.2rem);line-height:1.6;direction:rtl}
-.gate-brand{font-weight:800;font-size:clamp(1.4rem,4vw,1.9rem);letter-spacing:-.03em;line-height:1.2}
-.gate-sub{margin-top:6px;font-size:.74rem;letter-spacing:.32em;text-transform:uppercase;color:#9aa0ad}
-.gate-img{flex:1 1 auto;min-height:0;max-height:48vh;width:auto;max-width:min(340px,72vw);object-fit:contain}
-.gate-form{width:min(420px,100%);text-align:center}
-.gate-row{display:flex;gap:8px}
-.gate-row input{flex:1;min-width:0;background:#000;color:#fff;border:1.5px solid #fff;border-radius:999px;padding:14px 20px;text-align:center;font-size:1.05rem;letter-spacing:.3em}
-.gate-row input::placeholder{letter-spacing:.04em;color:#7b8190}
-.gate-row input:focus{outline:2px solid #E3B23C;outline-offset:2px}
-.gate-row button{background:#fff;color:#000;border:0;border-radius:999px;padding:0 26px;font:inherit;font-weight:700;cursor:pointer}
-.gate-row button:hover{background:#E3B23C}
-.gate-msg{margin:12px 0 0;font-size:.85rem;color:#9aa0ad;min-height:1.4em}
+.gate-ar{display:block;font-family:"Amiri","Noto Naskh Arabic",serif;font-weight:700;font-size:clamp(1.3rem,4.4vw,1.9rem);line-height:1.6;direction:rtl}
+.gate-brand{font-weight:800;font-size:clamp(1.1rem,3.2vw,1.4rem);letter-spacing:-.02em;line-height:1.2}
+.gate-media{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;padding:14px 0}
+.gate-img{width:min(640px,100%);max-height:100%;object-fit:contain;-webkit-mask-image:radial-gradient(ellipse 64% 66% at 50% 50%,#000 52%,transparent 100%);mask-image:radial-gradient(ellipse 64% 66% at 50% 50%,#000 52%,transparent 100%)}
+.gate-form{width:min(360px,100%);text-align:center}
+.gate-field{position:relative;border-bottom:1px solid #4a4f5b;transition:border-color .2s}
+.gate-field:focus-within{border-color:#fff}
+.gate-field input{width:100%;background:transparent;border:0;border-radius:0;color:#fff;text-align:center;font-size:1.15rem;letter-spacing:.4em;padding:14px 50px;outline:none}
+.gate-field input::placeholder{letter-spacing:.22em;font-size:.78rem;text-transform:uppercase;color:#6d7380}
+.gate-field button{position:absolute;right:0;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.gate-field button:hover{background:#E3B23C}
+.gate-field button svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gate-msg{margin:14px 0 0;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:#6d7380;min-height:1.4em}
 .gate-msg.err{color:#ff8a7a}
-.gate-row.shake{animation:shake .4s}
+.gate-field.shake{animation:shake .4s}
 @keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-.gate-links{display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:center;font-size:.78rem}
-.gate-links a{color:#9aa0ad}
-@media(prefers-reduced-motion:reduce){.gate{transition:none}.gate-row.shake{animation:none}}
+.gate-links{display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:center;font-size:.75rem;padding-top:10px}
+.gate-links a{color:#6d7380}
+.gate-links a:hover{color:#fff}
+@media(prefers-reduced-motion:reduce){.gate{transition:none}.gate-field.shake{animation:none}}

@@ -24,24 +24,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<script>try{if(localStorage.getItem("ng_unlocked")==="1")document.documentElement.classList.add("unlocked")}catch(e){}</script>
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <section class="gate" id="gate" aria-label="Enter password">
   <div class="gate-top">
     <span class="gate-ar" lang="ar" dir="rtl">لَا إِلٰهَ إِلَّا ٱللَّٰهُ مُحَمَّدٌ رَسُولُ ٱللَّٰهِ</span>
     <div class="gate-brand">narimanghanai</div>
-    <div class="gate-sub">Fall Collection 26</div>
   </div>
-  <img class="gate-img" id="gateImg" src="zombie.gif" alt="" onerror="this.onerror=null;this.src='zombie.jpg'">
+  <div class="gate-media"><img class="gate-img" id="gateImg" src="gate.gif" alt="" onerror="this.style.display='none'"></div>
   <form class="gate-form" id="gateForm" autocomplete="off">
     <label class="sr" for="gatePw">Password</label>
-    <div class="gate-row" id="gateRow">
-      <input id="gatePw" type="password" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
-      <button type="submit">Enter</button>
+    <div class="gate-field" id="gateRow">
+      <input id="gatePw" type="password" placeholder="Enter password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+      <button type="submit" aria-label="Enter"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     </div>
-    <p class="gate-msg" id="gateMsg" role="status">Password needed. Everyone else: wait for the drop.</p>
+    <p class="gate-msg" id="gateMsg" role="status">Fall Collection 26</p>
   </form>
   <nav class="gate-links" aria-label="Info">
     <a href="impressum.html">Legal notice</a><a href="widerruf.html">Withdrawal</a><a href="datenschutz.html">Privacy</a>
@@ -557,7 +555,6 @@ if(!isUnlocked()){ lockInert(true); setTimeout(()=>$("gatePw").focus(),300); }
 $("gateForm").addEventListener("submit",e=>{
   e.preventDefault();
   if($("gatePw").value.trim()===PASSWORD){
-    try{ localStorage.setItem("ng_unlocked","1"); }catch(_){}
     $("gate").classList.add("out"); lockInert(false);
     setTimeout(()=>document.documentElement.classList.add("unlocked"),650);
     if(location.hash.length>1) openProduct(decodeURIComponent(location.hash.slice(1)));
@@ -567,6 +564,7 @@ $("gateForm").addEventListener("submit",e=>{
     $("gatePw").value = ""; $("gatePw").focus();
   }
 });
+$("gatePw").addEventListener("input",()=>{ $("gateMsg").classList.remove("err"); $("gateMsg").textContent = "Fall Collection 26"; });
 if(location.hash.length>1 && isUnlocked()) openProduct(decodeURIComponent(location.hash.slice(1)));
 </script>
 </body>
