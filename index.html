@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 <section class="gate" id="gate" aria-label="Enter password">
@@ -555,9 +555,18 @@ if(!isUnlocked()){ lockInert(true); setTimeout(()=>$("gatePw").focus(),300); }
 $("gateForm").addEventListener("submit",e=>{
   e.preventDefault();
   if($("gatePw").value.trim()===PASSWORD){
-    $("gate").classList.add("out"); lockInert(false);
-    setTimeout(()=>document.documentElement.classList.add("unlocked"),650);
-    if(location.hash.length>1) openProduct(decodeURIComponent(location.hash.slice(1)));
+    const g = $("gate"), html = document.documentElement;
+    if(g.classList.contains("granted")) return;
+    g.classList.add("granted");                         // 1) Häkchen, Gold, "Welcome"
+    $("gatePw").disabled = true; $("gatePw").blur();
+    $("gateMsg").classList.remove("err"); $("gateMsg").textContent = "Welcome";
+    g.querySelector(".gate-field button").innerHTML = '<svg viewBox="0 0 24 24"><path class="chk" d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    lockInert(false);
+    setTimeout(()=>{ html.classList.add("reveal"); g.classList.add("lift"); }, 700);   // 2) Vorhang hebt sich
+    setTimeout(()=>{
+      html.classList.add("unlocked");                   // 3) Gate weg
+      if(location.hash.length>1) openProduct(decodeURIComponent(location.hash.slice(1)));
+    }, 700 + 1300);
   }else{
     $("gateMsg").textContent = "Wrong password. Wait for the drop."; $("gateMsg").classList.add("err");
     const row = $("gateRow"); row.classList.remove("shake"); void row.offsetWidth; row.classList.add("shake");

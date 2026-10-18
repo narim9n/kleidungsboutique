@@ -218,7 +218,6 @@ input,textarea,select{font-weight:400}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .gate{position:fixed;inset:0;z-index:100;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:max(24px,env(safe-area-inset-top)) 24px max(20px,env(safe-area-inset-bottom));overflow:auto;transition:opacity .6s ease,visibility .6s}
 html.unlocked .gate{display:none}
-.gate.out{opacity:0;visibility:hidden}
 html.gated:not(.unlocked) body{overflow:hidden}
 .gate-top{text-align:center}
 .gate-ar{display:block;font-family:"Amiri","Noto Naskh Arabic",serif;font-weight:700;font-size:clamp(1.3rem,4.4vw,1.9rem);line-height:1.6;direction:rtl}
@@ -241,3 +240,19 @@ html.gated:not(.unlocked) body{overflow:hidden}
 .gate-links a{color:#6d7380}
 .gate-links a:hover{color:#fff}
 @media(prefers-reduced-motion:reduce){.gate{transition:none}.gate-field.shake{animation:none}}
+
+/* Freischalt-Animation */
+.gate{clip-path:inset(0 0 0 0)}
+.gate-field,.gate-field button,.gate-msg{transition:border-color .3s,background .3s,color .3s}
+.gate .chk{stroke-dasharray:24;stroke-dashoffset:24}
+.gate.granted .gate-field{border-color:#E3B23C}
+.gate.granted .gate-field button{background:#E3B23C}
+.gate.granted .gate-msg{color:#E3B23C}
+.gate.granted .chk{animation:tick .4s .05s ease forwards}
+.gate-top,.gate-media,.gate-form,.gate-links{transition:opacity .4s ease,transform .6s ease}
+.gate.lift .gate-media,.gate.lift .gate-form,.gate.lift .gate-links{opacity:0;transform:translateY(-16px)}
+.gate.lift .gate-top{opacity:0;transform:translateY(-10px);transition-delay:.15s}
+.gate.lift{clip-path:inset(0 0 100% 0);transition:clip-path .95s cubic-bezier(.77,0,.18,1) .35s}
+html.reveal header,html.reveal main{animation:siteIn 1s .15s cubic-bezier(.2,.7,.2,1) both}
+@keyframes siteIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.gate.lift{transition:none}html.reveal header,html.reveal main{animation:none}.gate.granted .chk{animation:none;stroke-dashoffset:0}}
