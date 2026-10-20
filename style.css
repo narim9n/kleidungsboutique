@@ -256,3 +256,11 @@ html.gated:not(.unlocked) body{overflow:hidden}
 html.reveal header,html.reveal main{animation:siteIn 1s .15s cubic-bezier(.2,.7,.2,1) both}
 @keyframes siteIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.gate.lift{transition:none}html.reveal header,html.reveal main{animation:none}.gate.granted .chk{animation:none;stroke-dashoffset:0}}
+
+/* Stripe-Kauf */
+.product .btn{min-width:210px;text-align:center}
+.product a.btn{text-decoration:none}
+.trust{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:9px;font-size:.88rem;color:var(--muted)}
+.trust li{position:relative;padding-left:24px;line-height:1.45}
+.trust li::before{content:"";position:absolute;left:1px;top:.42em;width:11px;height:6px;border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(-45deg)}
+.trust a{color:var(--ink)}
