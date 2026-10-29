@@ -264,3 +264,18 @@ html.reveal header,html.reveal main{animation:siteIn 1s .15s cubic-bezier(.2,.7,
 .trust li{position:relative;padding-left:24px;line-height:1.45}
 .trust li::before{content:"";position:absolute;left:1px;top:.42em;width:11px;height:6px;border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(-45deg)}
 .trust a{color:var(--ink)}
+
+/* Politur */
+.gate-count{margin:12px 0 0;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;color:#E3B23C;font-variant-numeric:tabular-nums}
+.gate-count[hidden]{display:none}
+.linkbtn{background:none;border:0;padding:0;margin-top:14px;font:inherit;font-size:.88rem;color:var(--muted);text-decoration:underline;cursor:pointer}
+.linkbtn:hover{color:var(--ink)}
+.buybar{display:none}
+@media(max-width:700px){
+  .pm .info>.btn{display:none}
+  .buybar{display:flex;align-items:center;justify-content:space-between;gap:14px;position:sticky;bottom:0;z-index:3;margin:20px -16px 0;padding:12px 16px max(12px,env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line)}
+  .bb-info{display:grid;line-height:1.2}
+  .bb-info b{font-size:1.15rem}
+  .bb-info small{color:var(--muted);font-size:.78rem}
+  .buybar .btn{min-width:0;flex:1;max-width:220px;padding:13px 18px}
+}

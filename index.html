@@ -24,9 +24,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
+<noscript><style>.gate{display:none!important}html.gated body{overflow:auto!important}</style><p style="padding:32px;text-align:center">Please turn on JavaScript to view the shop.</p></noscript>
 <section class="gate" id="gate" aria-label="Enter password">
   <div class="gate-top">
     <span class="gate-ar" lang="ar" dir="rtl">لَا إِلٰهَ إِلَّا ٱللَّٰهُ مُحَمَّدٌ رَسُولُ ٱللَّٰهِ</span>
@@ -40,6 +41,7 @@
       <button type="submit" aria-label="Enter"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     </div>
     <p class="gate-msg" id="gateMsg" role="status">Fall Collection 26</p>
+    <p class="gate-count" id="gateCount" hidden></p>
   </form>
   <nav class="gate-links" aria-label="Info">
     <a href="impressum.html">Legal notice</a><a href="widerruf.html">Withdrawal</a><a href="datenschutz.html">Privacy</a>
@@ -94,6 +96,9 @@
 // ==== HIER ANPASSEN ====
 // Passwort für den Einlass-Bildschirm. Pro Drop einfach ändern.
 const PASSWORD = "2006";
+// Öffentlicher Drop: ab diesem Zeitpunkt kommt jeder ohne Passwort rein. Leer lassen = Passwort gilt immer.
+// Beispiel: "2026-11-15T18:00:00+01:00"  (Jahr-Monat-Tag, Uhrzeit, Zeitzone)
+const DROP_AT = "";
 // Nur Anzeige auf der Seite. Muss zu den Versandarten passen, die du in Stripe angelegt hast.
 const SHIP_INFO = {de:6.19, eu:14.49};
 // Collections: hier neue hinzufügen. Beim Produkt dann collection:"id" eintragen.
@@ -146,7 +151,7 @@ renderGrid(); renderMenu();
 
 function buyHTML(p){
   if(p.sold) return '<button class="btn" disabled>Sold</button>';
-  if(!p.buyUrl) return '<button class="btn" disabled>Checkout opens soon</button>';
+  if(!p.buyUrl) return '<button class="btn" disabled>Opens soon</button>';
   return `<a class="btn buy" href="${p.buyUrl}" rel="noopener">Buy now</a>`;
 }
 function productHTML(p){
@@ -168,18 +173,36 @@ function productHTML(p){
         <li>Shipping with DHL. Germany ${eur(SHIP_INFO.de)}, EU ${eur(SHIP_INFO.eu)}, pickup in Frankfurt free. You choose at checkout.</li>
         <li>14-day right of withdrawal. <a href="widerruf.html">Details</a></li>
       </ul>
+      <button class="linkbtn" data-share="${p.id}">Share this piece</button>
     </div>
+    <div class="buybar"><div class="bb-info"><b>${eur(p.price)}</b><small>${p.sold?"Sold":"Unique piece"}</small></div>${buyHTML(p)}</div>
   </article>`;
 }
 
+const isUnlocked = () => document.documentElement.classList.contains("unlocked");
+let lastFocus = null;
+async function shareProduct(id,btn){
+  const p = PRODUCTS.find(x=>x.id===id), url = location.origin + location.pathname + "#" + id;
+  if(navigator.share){
+    try{ await navigator.share({title:p.name+" – narimanghanai", text:p.name, url}); return; }
+    catch(e){ if(e.name==="AbortError") return; }
+  }
+  try{ await navigator.clipboard.writeText(url); const t = btn.textContent; btn.textContent = "Link copied"; setTimeout(()=>btn.textContent=t,1800); }
+  catch(e){ prompt("Copy this link", url); }
+}
+const bgInert = on => document.querySelectorAll("header,main,footer").forEach(e=>on ? e.setAttribute("inert","") : e.removeAttribute("inert"));
 function openProduct(id){
   const p = PRODUCTS.find(x=>x.id===id); if(!p) return;
   $("pmBody").innerHTML = productHTML(p); cur[id] = 0;
+  lastFocus = document.activeElement;
   $("pm").hidden = false; document.body.classList.add("noscroll"); $("pm").querySelector(".pm-box").scrollTop = 0;
+  bgInert(true); $("pmX").focus();
   try{ history.replaceState(null,"","#"+id); }catch(e){}
 }
 function closeProduct(){
   $("pm").hidden = true; document.body.classList.remove("noscroll");
+  if(isUnlocked()) bgInert(false);
+  if(lastFocus && lastFocus.focus) lastFocus.focus();
   try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
 }
 $("grid").addEventListener("click",e=>{ const t = e.target.closest("[data-open]"); if(t) openProduct(t.dataset.open); });
@@ -189,6 +212,7 @@ $("pm").addEventListener("click",e=>{
   const t = e.target.closest("[data-g]");
   if(t){ $("main-"+t.dataset.g).src = t.querySelector("img").src;
     t.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===t)); cur[t.dataset.g] = +t.dataset.i; return; }
+  const sh = e.target.closest("[data-share]"); if(sh){ shareProduct(sh.dataset.share, sh); return; }
   const mm = e.target.closest(".main,.fs");
   if(mm){ const pid = mm.closest(".product").dataset.pid; lbOpen(PRODUCTS.find(x=>x.id===pid).images, cur[pid]||0); }
 });
@@ -250,31 +274,49 @@ $("y").textContent = new Date().getFullYear();
 document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !e.defaultPrevented && !$("pm").hidden) closeProduct(); });
 
 /* Einlass-Bildschirm */
-const lockInert = on => document.querySelectorAll("header,main,footer").forEach(e=>on ? e.setAttribute("inert","") : e.removeAttribute("inert"));
-const isUnlocked = () => document.documentElement.classList.contains("unlocked");
+const lockInert = bgInert;
+const dropTime = DROP_AT ? Date.parse(DROP_AT) : NaN;
+if(!isNaN(dropTime) && Date.now() >= dropTime) document.documentElement.classList.add("unlocked");   // Drop ist live
 if(!isUnlocked()){ lockInert(true); setTimeout(()=>$("gatePw").focus(),300); }
+
+function grant(){
+  const g = $("gate"), html = document.documentElement;
+  if(g.classList.contains("granted")) return;
+  g.classList.add("granted");                         // 1) Häkchen, Gold, "Welcome"
+  $("gatePw").disabled = true; $("gatePw").blur();
+  $("gateMsg").classList.remove("err"); $("gateMsg").textContent = "Welcome";
+  $("gateCount").hidden = true;
+  g.querySelector(".gate-field button").innerHTML = '<svg viewBox="0 0 24 24"><path class="chk" d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  lockInert(false);
+  setTimeout(()=>{ html.classList.add("reveal"); g.classList.add("lift"); }, 700);   // 2) Vorhang hebt sich
+  setTimeout(()=>{
+    html.classList.add("unlocked");                   // 3) Gate weg
+    if(location.hash.length>1) openProduct(decodeURIComponent(location.hash.slice(1)));
+  }, 700 + 1300);
+}
 $("gateForm").addEventListener("submit",e=>{
   e.preventDefault();
-  if($("gatePw").value.trim()===PASSWORD){
-    const g = $("gate"), html = document.documentElement;
-    if(g.classList.contains("granted")) return;
-    g.classList.add("granted");                         // 1) Häkchen, Gold, "Welcome"
-    $("gatePw").disabled = true; $("gatePw").blur();
-    $("gateMsg").classList.remove("err"); $("gateMsg").textContent = "Welcome";
-    g.querySelector(".gate-field button").innerHTML = '<svg viewBox="0 0 24 24"><path class="chk" d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-    lockInert(false);
-    setTimeout(()=>{ html.classList.add("reveal"); g.classList.add("lift"); }, 700);   // 2) Vorhang hebt sich
-    setTimeout(()=>{
-      html.classList.add("unlocked");                   // 3) Gate weg
-      if(location.hash.length>1) openProduct(decodeURIComponent(location.hash.slice(1)));
-    }, 700 + 1300);
-  }else{
+  if($("gatePw").value.trim()===PASSWORD){ grant(); }
+  else{
     $("gateMsg").textContent = "Wrong password. Wait for the drop."; $("gateMsg").classList.add("err");
     const row = $("gateRow"); row.classList.remove("shake"); void row.offsetWidth; row.classList.add("shake");
     $("gatePw").value = ""; $("gatePw").focus();
   }
 });
 $("gatePw").addEventListener("input",()=>{ $("gateMsg").classList.remove("err"); $("gateMsg").textContent = "Fall Collection 26"; });
+
+/* Countdown bis zum öffentlichen Drop */
+if(!isNaN(dropTime) && !isUnlocked()){
+  const pad = n => String(n).padStart(2,"0");
+  const tick = () => {
+    const left = dropTime - Date.now();
+    if(left <= 0){ clearInterval(timer); grant(); return; }
+    const d = Math.floor(left/864e5), h = Math.floor(left%864e5/36e5), m = Math.floor(left%36e5/6e4), sec = Math.floor(left%6e4/1e3);
+    $("gateCount").textContent = `Public drop in ${d ? d+"d " : ""}${pad(h)}:${pad(m)}:${pad(sec)}`;
+  };
+  $("gateCount").hidden = false; tick();
+  var timer = setInterval(tick,1000);
+}
 if(location.hash.length>1 && isUnlocked()) openProduct(decodeURIComponent(location.hash.slice(1)));
 </script>
 </body>
